@@ -11,7 +11,7 @@ public class Main {
 
 	public static void main(String args[]) {
 		Servicios servicios = new Servicios("/home/ale/Laboratorio/TPE_Prog3/datasets/Procesadores.csv", "/home/ale/Laboratorio/TPE_Prog3/datasets/Tareas.csv");
-
+		servicios.asignacionTareas(200);
 /*		// SERIVICIO 1
 		System.out.println(servicios.servicio1("T3"));*/
 
@@ -22,10 +22,12 @@ public class Main {
 		System.out.println(salidaServicio2);*/
 
 		// SERIVICIO 3
-		int priridadMenor = inputServicio3("Ingrese la prioridad menor del rango:");
+/*		int priridadMenor = inputServicio3("Ingrese la prioridad menor del rango:");
 		int priridadMayor = inputServicio3("Ingrese la prioridad mayor del rango:");
 		List<Tarea> salidaServicio3 = servicios.servicio3(priridadMenor, priridadMayor);
 		System.out.println(salidaServicio3);
+*/
+
 
 	}
 	public static boolean inputServicio2(){
