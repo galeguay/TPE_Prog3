@@ -1,5 +1,7 @@
 package tpe.model;
 
+import java.util.Objects;
+
 public class Tarea {
     private String nombre;
     private String ID;
@@ -54,6 +56,13 @@ public class Tarea {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Tarea tarea)) return false;
+        return Objects.equals(getID(), tarea.getID());
+    }
+
+/*    @Override
     public String toString() {
         return "Tarea{" +
                 "nombre='" + nombre + '\'' +
@@ -62,5 +71,9 @@ public class Tarea {
                 ", critica=" + critica +
                 ", prioridad=" + prioridad +
                 '}';
+    }*/
+    @Override
+    public String toString() {
+        return nombre;
     }
 }
