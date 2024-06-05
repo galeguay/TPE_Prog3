@@ -6,7 +6,8 @@ import tpe.model.Arbol;
 import tpe.utils.CSVReaderCustom;
 
 import java.util.*;
-import java.util.stream.Collectors;
+
+import static tpe.utils.TextColor.*;
 
 /**
  * NO modificar la interfaz de esta clase ni sus métodos públicos.
@@ -66,10 +67,11 @@ public class Servicios {
         }
     }
 
-    int cantidadDeEstados = 0;
+    int metrica = 0;
     //este contendra la soolucion final, no es necesario inicializarlo ya que sera una copia de la mejor solucion parcial
-    HashMap<String, ArrayList<Tarea>> mejorSolucion;
+    HashMap<String, ArrayList<Tarea>> mejorSolucion = new HashMap<>();
     int tiempoMejorSolucion;
+    int solucionesConsideradas;
     Integer LIMITE_PROCESADOR_NO_R;
 
 
@@ -83,24 +85,20 @@ public class Servicios {
             solucionParcial.put(p, new ArrayList<>());
         }
 
-/*        Set<String> keys = tareas.keySet();
-        List<String> tareaList = new ArrayList<>(keys);
-        for(String key : keys){
-            tareaList.add();
-        }*/
-
         backtracking(tareas, solucionParcial);
 
-        System.out.println("FINAL DE Backtracking");
-        System.out.println("Solución obtenida: " + mejorSolucion.toString());
+        System.out.println(GREEN + "FINAL DE BACKTRACKING");
+        System.out.println("Solución: " + mejorSolucion);
         System.out.println("Tiempo de solución obtenida: " + tiempoMejorSolucion);
-        System.out.println("Métrica (cantidad de estados generados): " + cantidadDeEstados);
+        System.out.println("Métrica: " + metrica);
+        System.out.println("Soluciones consideradas: " + solucionesConsideradas);
     }
 
     private void backtracking(HashMap<String, Tarea> tareasRestantes, HashMap<String, ArrayList<Tarea>> solucionParcial) {
         if (tareasRestantes.isEmpty()) {
             //si no quedan tareas por asignar, se llegó a una solución
             System.out.println("No hay tareas restantes");
+            solucionesConsideradas++;
 
             //obtenermos el tiempo de la solucion actual y lo comparamos con el mejor obtenido hasta el momento
             Integer tiempoSolucionActual = max(solucionParcial);
@@ -108,10 +106,10 @@ public class Servicios {
             System.out.println("tiempoSolucionActual: "+ tiempoSolucionActual);
             System.out.println("tiempoMejorSolucion: "+ tiempoMejorSolucion);
             if (tiempoSolucionActual < tiempoMejorSolucion) {
-                tiempoMejorSolucion = tiempoSolucionActual;
-                mejorSolucion = new HashMap<>(solucionParcial); // Copia profunda
-                System.out.println("Solución actual es mejor");
+                System.out.println(YELLOW + "Solución actual es mejor" + RESET);
                 System.out.println();
+                tiempoMejorSolucion = tiempoSolucionActual;
+                reemplazarMejorSolucion(solucionParcial);
             }
         } else {
             for (Map.Entry<String, Tarea> entry : tareasRestantes.entrySet()) {
@@ -129,18 +127,19 @@ public class Servicios {
                         if (procesadores.get(procesador).isRefrigerado() || (tareaActual.getTiempoDeEjecucion() < LIMITE_PROCESADOR_NO_R)) {
 
                             //se contabiliza un estado nuevo al asignar la tarea al procesador
-                            cantidadDeEstados++;
+                            metrica++;
 
                             solucionParcial.get(procesador).add(tareaActual);
                             System.out.println(tareaActual.toString() + " --> " + procesador);
+                            System.out.println("solucionActual: "+ solucionParcial);
 
                             //poda: si el tiempo maximo parcial supera ya al mejor tiempo
                             if (max(solucionParcial) < tiempoMejorSolucion) {
                                 backtracking(copiaTareasRestantes, solucionParcial);
-                            } else System.out.println(tareaActual.toString() + " salta por PODA. TiempoActual:" + max(solucionParcial) + ", mejor solución: " + tiempoMejorSolucion);
+                            } else System.out.println(tareaActual + " se hizo PODA. TiempoActual: " + max(solucionParcial) + ", mejor solución: " + tiempoMejorSolucion);
                         } else System.out.println("salta por CONDICIÓN 2");
                     } else System.out.println("salta por CONDICIÓN 1");
-
+                    System.out.println();
                     //quitar tarea actual del procesador actual
                     for (int j = 0; j < solucionParcial.get(procesador).size(); j++) {
                         if (solucionParcial.get(procesador).get(j).getID().equals(tareaActual.getID())) {
@@ -185,5 +184,17 @@ public class Servicios {
                 contador++;
         }
         return contador >= 2;
+    }
+
+    private void reemplazarMejorSolucion(HashMap<String, ArrayList<Tarea>> solucionParcial){
+        mejorSolucion.clear(); // Limpiar la mejor solución anterior
+
+        // Copiar la solución parcial en la mejor solución
+        for (Map.Entry<String, ArrayList<Tarea>> entry : solucionParcial.entrySet()) {
+            String procesadorId = entry.getKey();
+            ArrayList<Tarea> tareasProcesador = new ArrayList<>(entry.getValue()); // Copia profunda de las tareas
+
+            mejorSolucion.put(procesadorId, tareasProcesador);
+        }
     }
 }

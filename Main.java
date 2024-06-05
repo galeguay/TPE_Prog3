@@ -11,7 +11,7 @@ public class Main {
 
 	public static void main(String args[]) {
 		Servicios servicios = new Servicios("/home/ale/Laboratorio/TPE_Prog3/datasets/Procesadores.csv", "/home/ale/Laboratorio/TPE_Prog3/datasets/Tareas.csv");
-		servicios.asignacionTareas(200);
+		servicios.asignacionTareas(100);
 /*		// SERIVICIO 1
 		System.out.println(servicios.servicio1("T3"));*/
 
