@@ -1,6 +1,7 @@
 package tpe;
 
 import tpe.model.Procesador;
+import tpe.model.Solucion;
 import tpe.model.Tarea;
 import tpe.model.Arbol;
 import tpe.utils.CSVReaderCustom;
@@ -67,17 +68,13 @@ public class Servicios {
         }
     }
 
-    int metrica = 0;
-    //este contendra la soolucion final, no es necesario inicializarlo ya que sera una copia de la mejor solucion parcial
-    HashMap<String, ArrayList<Tarea>> mejorSolucion = new HashMap<>();
-    int tiempoMejorSolucion;
-    int solucionesConsideradas;
     Integer LIMITE_PROCESADOR_NO_R;
 
+    private Solucion mejorSolucion = new Solucion();
 
-    public void asignacionTareas(int tiempoLimitePNoRefrigerado) {
+    public Solucion asignacionTareasBacktracking(int tiempoLimitePNoRefrigerado) {
         LIMITE_PROCESADOR_NO_R = tiempoLimitePNoRefrigerado;
-        tiempoMejorSolucion = Integer.MAX_VALUE;
+        mejorSolucion.setTiempoSolucion(Integer.MAX_VALUE);
 
         //preparar hash solucion vacio que contendra el id de los procesadores con la lista de tareas a ejecutar
         HashMap<String, ArrayList<Tarea>> solucionParcial = new HashMap<>();
@@ -87,28 +84,24 @@ public class Servicios {
 
         backtracking(tareas, solucionParcial);
 
-        System.out.println(GREEN + "FINAL DE BACKTRACKING");
-        System.out.println("Solución: " + mejorSolucion);
-        System.out.println("Tiempo de solución obtenida: " + tiempoMejorSolucion);
-        System.out.println("Métrica: " + metrica);
-        System.out.println("Soluciones consideradas: " + solucionesConsideradas);
+
+        return mejorSolucion;
     }
 
     private void backtracking(HashMap<String, Tarea> tareasRestantes, HashMap<String, ArrayList<Tarea>> solucionParcial) {
         if (tareasRestantes.isEmpty()) {
             //si no quedan tareas por asignar, se llegó a una solución
             System.out.println("No hay tareas restantes");
-            solucionesConsideradas++;
 
             //obtenermos el tiempo de la solucion actual y lo comparamos con el mejor obtenido hasta el momento
             Integer tiempoSolucionActual = max(solucionParcial);
             System.out.println("solucionParcial: "+ solucionParcial);
             System.out.println("tiempoSolucionActual: "+ tiempoSolucionActual);
-            System.out.println("tiempoMejorSolucion: "+ tiempoMejorSolucion);
-            if (tiempoSolucionActual < tiempoMejorSolucion) {
+            System.out.println("tiempoMejorSolucion: "+ mejorSolucion.getTiempoSolucion());
+            if (tiempoSolucionActual < mejorSolucion.getTiempoSolucion()) {
                 System.out.println(YELLOW + "Solución actual es mejor" + RESET);
                 System.out.println();
-                tiempoMejorSolucion = tiempoSolucionActual;
+                mejorSolucion.setTiempoSolucion(tiempoSolucionActual);
                 reemplazarMejorSolucion(solucionParcial);
             }
         } else {
@@ -127,16 +120,16 @@ public class Servicios {
                         if (procesadores.get(procesador).isRefrigerado() || (tareaActual.getTiempoDeEjecucion() < LIMITE_PROCESADOR_NO_R)) {
 
                             //se contabiliza un estado nuevo al asignar la tarea al procesador
-                            metrica++;
+                            mejorSolucion.sumarMetrica();
 
                             solucionParcial.get(procesador).add(tareaActual);
                             System.out.println(tareaActual.toString() + " --> " + procesador);
                             System.out.println("solucionActual: "+ solucionParcial);
 
                             //poda: si el tiempo maximo parcial supera ya al mejor tiempo
-                            if (max(solucionParcial) < tiempoMejorSolucion) {
+                            if (max(solucionParcial) < mejorSolucion.getTiempoSolucion()) {
                                 backtracking(copiaTareasRestantes, solucionParcial);
-                            } else System.out.println(tareaActual + " se hizo PODA. TiempoActual: " + max(solucionParcial) + ", mejor solución: " + tiempoMejorSolucion);
+                            } else System.out.println(tareaActual + " se hizo PODA. TiempoActual: " + max(solucionParcial) + ", mejor solución: " + mejorSolucion.getTiempoSolucion());
                         } else System.out.println("salta por CONDICIÓN 2");
                     } else System.out.println("salta por CONDICIÓN 1");
                     System.out.println();
@@ -187,14 +180,55 @@ public class Servicios {
     }
 
     private void reemplazarMejorSolucion(HashMap<String, ArrayList<Tarea>> solucionParcial){
-        mejorSolucion.clear(); // Limpiar la mejor solución anterior
+        mejorSolucion.getHashSolucion().clear();
 
         // Copiar la solución parcial en la mejor solución
         for (Map.Entry<String, ArrayList<Tarea>> entry : solucionParcial.entrySet()) {
             String procesadorId = entry.getKey();
             ArrayList<Tarea> tareasProcesador = new ArrayList<>(entry.getValue()); // Copia profunda de las tareas
 
-            mejorSolucion.put(procesadorId, tareasProcesador);
+            mejorSolucion.getHashSolucion().put(procesadorId, tareasProcesador);
         }
     }
+
+    public static void asignarTareasGreedy(int[] tiemposTareas, int mProcesadores) {
+        // Inicializamos las cargas de los procesadores en 0
+        int[] cargaProcesadores = new int[mProcesadores];
+        Arrays.fill(cargaProcesadores, 0);
+
+        // Ordenamos las tareas en orden descendente (opcional pero recomendado)
+        Arrays.sort(tiemposTareas);
+        int n = tiemposTareas.length;
+        for (int i = 0; i < n / 2; i++) {
+            int temp = tiemposTareas[i];
+            tiemposTareas[i] = tiemposTareas[n - i - 1];
+            tiemposTareas[n - i - 1] = temp;
+        }
+
+        // Asignamos cada tarea al procesador con la menor carga actual
+        for (int tarea : tiemposTareas) {
+            // Encontramos el índice del procesador con la menor carga
+            int indiceMenorCarga = 0;
+            for (int i = 1; i < mProcesadores; i++) {
+                if (cargaProcesadores[i] < cargaProcesadores[indiceMenorCarga]) {
+                    indiceMenorCarga = i;
+                }
+            }
+            // Asignamos la tarea a ese procesador
+            cargaProcesadores[indiceMenorCarga] += tarea;
+        }
+
+        // Imprimimos la carga de cada procesador después de asignar todas las tareas
+        for (int i = 0; i < mProcesadores; i++) {
+            System.out.println("Carga del procesador " + (i + 1) + ": " + cargaProcesadores[i]);
+        }
+    }
+
+    public static void main(String[] args) {
+        int[] tiemposTareas = {2, 14, 4, 16, 6, 5};
+        int mProcesadores = 3;
+
+        asignarTareasGreedy(tiemposTareas, mProcesadores);
+    }
+
 }
