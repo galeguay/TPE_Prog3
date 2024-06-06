@@ -210,6 +210,7 @@ public class Servicios {
         Iterator<Tarea> itTareas = listaTareas.iterator();
         //recorre todas las tareas
         while (itTareas.hasNext()) {
+            int considerados=solucionParcial.size();
             boolean asignada = false;
             Tarea tareaActual = itTareas.next();
             int cargaMinima=menorCarga(solucionParcial);
@@ -222,11 +223,15 @@ public class Servicios {
                     if ((cargaProcesadores.get(procesador) + tareaActual.getTiempoDeEjecucion()) <= (cargaMinima + tareaActual.getTiempoDeEjecucion())
                             && (esFactible(solucionParcial, tareaActual, procesador, tiempoLimitePNoRefrigerado))) {
 
+                        //Agrega la tarea a la solucion parcial
                         solucionParcial.get(procesador).add(tareaActual);
+
                         //Le suma al procesador el tiempo de la tarea
                         cargaProcesadores.put(procesador,cargaProcesadores.get(procesador)+tareaActual.getTiempoDeEjecucion());
-                        
+
                         break;
+                    }else{
+                        considerados--;
                     }
 
             }
