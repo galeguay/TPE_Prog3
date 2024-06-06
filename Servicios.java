@@ -72,7 +72,7 @@ public class Servicios {
 
     private Solucion mejorSolucion = new Solucion();
 
-    public Solucion asignacionTareasBacktracking(int tiempoLimitePNoRefrigerado) {
+    public Solucion asignarTareasBacktracking(int tiempoLimitePNoRefrigerado) {
         LIMITE_PROCESADOR_NO_R = tiempoLimitePNoRefrigerado;
         mejorSolucion.setTiempoSolucion(Integer.MAX_VALUE);
 
@@ -195,6 +195,7 @@ public class Servicios {
     public Solucion asignarTareasGreedy(int tiempoLimitePNoRefrigerado) {
         Solucion solucion = new Solucion();
         HashMap<String, Integer> cargaProcesadores = new HashMap<>();
+        int considerados = 0;
 
         //preparar hash solucion vacio que contendra el id de los procesadores con la lista de tareas a ejecutar
         HashMap<String, ArrayList<Tarea>> solucionParcial = new HashMap<>();
@@ -210,7 +211,7 @@ public class Servicios {
         Iterator<Tarea> itTareas = listaTareas.iterator();
         //recorre todas las tareas
         while (itTareas.hasNext()) {
-            int considerados=solucionParcial.size();
+            considerados+=solucionParcial.size();
             boolean asignada = false;
             Tarea tareaActual = itTareas.next();
             int cargaMinima=menorCarga(solucionParcial);
@@ -238,6 +239,7 @@ public class Servicios {
         }
 
         solucion.setSolucion(solucionParcial);
+        solucion.setMetrica(considerados);
         return solucion;
     }
 

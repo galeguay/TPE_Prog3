@@ -17,6 +17,7 @@ public class Solucion {
 
     public void setSolucion(HashMap<String, ArrayList<Tarea>> solucion) {
         this.solucion = solucion;
+        setTiempoSolucion(calcularTiempo());
     }
 
     public int getMetrica() {
@@ -39,6 +40,20 @@ public class Solucion {
         this.tiempoSolucion = tiempoSolucion;
     }
 
+    private Integer calcularTiempo() {
+        Integer maxCarga = 0;
+        for (String procesador : solucion.keySet()) {
+            Integer suma = 0;
+            for (Tarea t : solucion.get(procesador)) {
+                suma += t.getTiempoDeEjecucion();
+            }
+            if (suma > maxCarga) {
+                maxCarga = suma;
+            }
+        }
+        return maxCarga;
+    }
+
     @Override
     public String toString() {
         return GREEN + " + \"FINAL DE BACKTRACKING\"" +
@@ -46,4 +61,6 @@ public class Solucion {
                 "\nMétrica=" + metrica +
                 "\nTiempo de solución obtenida: " + tiempoSolucion;
     }
+
+
 }

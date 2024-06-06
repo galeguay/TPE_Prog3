@@ -1,19 +1,16 @@
 package tpe;
 
 import tpe.model.Solucion;
-import tpe.model.Tarea;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
 
 public class Main {
 
 	public static void main(String args[]) {
 		Servicios servicios = new Servicios("TPE_Prog3/datasets/Procesadores.csv", "TPE_Prog3/datasets/Tareas.csv");
-		Solucion solucion = servicios.asignarTareasGreedy(1000);
-		//System.out.println(solucion.toString());
+		Solucion solucion = servicios.asignarTareasBacktracking(1000);
+		System.out.println(solucion.toString());
 /*		// SERIVICIO 1
 		System.out.println(servicios.servicio1("T3"));*/
 
