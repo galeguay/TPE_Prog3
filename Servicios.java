@@ -219,8 +219,8 @@ public class Servicios {
                     solucionParcial.get(procesadorMenorCarga).add(tareaActual);
                     asignada = true;
                 }else {
-                    //descartamos el procesador como solucion ya que no es factible, para la tarea actual
-                    procesadoresRestantes.remove();
+                    //descartamos el procesador como solucion para la tarea actual, ya que no es factible
+                    procesadoresRestantes.remove(procesadorMenorCarga);
                 }
             }
         }
@@ -262,88 +262,6 @@ public class Servicios {
             }
         }
         return idMenor;
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    public static void asignarTareasGreedy(int[] tiemposTareas, int mProcesadores) {
-        // Inicializamos las cargas de los procesadores en 0
-        int[] cargaProcesadores = new int[mProcesadores];
-        Arrays.fill(cargaProcesadores, 0);
-
-        // Ordenamos las tareas en orden descendente (opcional pero recomendado)
-        Arrays.sort(tiemposTareas);
-        int n = tiemposTareas.length;
-        for (int i = 0; i < n / 2; i++) {
-            int temp = tiemposTareas[i];
-            tiemposTareas[i] = tiemposTareas[n - i - 1];
-            tiemposTareas[n - i - 1] = temp;
-        }
-
-        // Asignamos cada tarea al procesador con la menor carga actual
-        for (int tarea : tiemposTareas) {
-            // Encontramos el índice del procesador con la menor carga
-            int indiceMenorCarga = 0;
-            for (int i = 1; i < mProcesadores; i++) {
-                if (cargaProcesadores[i] < cargaProcesadores[indiceMenorCarga]) {
-                    indiceMenorCarga = i;
-                }
-            }
-            // Asignamos la tarea a ese procesador
-            cargaProcesadores[indiceMenorCarga] += tarea;
-        }
-
-        // Imprimimos la carga de cada procesador después de asignar todas las tareas
-        for (int i = 0; i < mProcesadores; i++) {
-            System.out.println("Carga del procesador " + (i + 1) + ": " + cargaProcesadores[i]);
-        }
-    }
-
-    public static void main(String[] args) {
-        int[] tiemposTareas = {2, 14, 4, 16, 6, 5};
-        int mProcesadores = 3;
-
-        asignarTareasGreedy(tiemposTareas, mProcesadores);
     }
 
 }
