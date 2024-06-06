@@ -191,6 +191,121 @@ public class Servicios {
         }
     }
 
+
+    private Solucion asignarTareasGreedy(int tiempoLimitePNoRefrigerado, ArrayList<Tarea> tareasRestantes) {
+        Solucion solucion = new Solucion();
+        HashMap<String, Integer> cargaProcesadores = new HashMap<>();
+
+        //preparar hash solucion vacio que contendra el id de los procesadores con la lista de tareas a ejecutar
+        HashMap<String, ArrayList<Tarea>> solucionParcial = new HashMap<>();
+        for (String p : procesadores.keySet()) {
+            solucionParcial.put(p, new ArrayList<>());
+            cargaProcesadores.put(p,0);
+        }
+
+        Iterator<Tarea> itTareas = tareasRestantes.iterator();
+        while (itTareas.hasNext()) {
+            Tarea tareaActual = itTareas.next();
+
+            //cargamos, en principio, todos los procesadores como posibles soluciones
+            ArrayList<String> procesadoresRestantes = new ArrayList<>();
+            for (String p : procesadores.keySet()) {
+                procesadoresRestantes.add(p);
+            }
+            boolean asignada = false;
+            while(!asignada && !procesadoresRestantes.isEmpty() ) {
+                String procesadorMenorCarga = menorCarga(cargaProcesadores, procesadoresRestantes);
+                if (esFactible(solucionParcial, tareaActual, procesadorMenorCarga, tiempoLimitePNoRefrigerado)) {
+                    solucionParcial.get(procesadorMenorCarga).add(tareaActual);
+                    asignada = true;
+                }else {
+                    //descartamos el procesador como solucion ya que no es factible, para la tarea actual
+                    procesadoresRestantes.remove();
+                }
+            }
+        }
+
+        solucion.setSolucion(solucionParcial);
+        return solucion;
+    }
+
+    private boolean esFactible(HashMap<String, ArrayList<Tarea>> solucionParcial, Tarea tareaActual, String procesador, int tiempoLimitePNoRefrigerado){
+
+        //CONDICIÓN 1: chequear si hay 2 criticas ya en la lista del procesador actual
+        if (!tareaActual.isCritica() || !limiteCriticas(solucionParcial.get(procesador))) {
+
+            //CONDICIÓN 2: si el procesador no es refrigerado, el tiempo de la tarea no debe superar el limite máximo ingresado
+            if (procesadores.get(procesador).isRefrigerado() || (tareaActual.getTiempoDeEjecucion() < tiempoLimitePNoRefrigerado)) {
+                return true;
+            }
+            return false;
+        }
+        return false;
+    }
+
+    /**
+     * Devuelve el ID del procesador con menor carga, de entre los considerados que contiene la lista pasada por parametros
+     * @param cargaProcesadores
+     * @param procesadoresRestantes
+     * @return
+     */
+    private String menorCarga(HashMap<String, Integer> cargaProcesadores, List<String> procesadoresRestantes){
+        String idMenor = "";
+        int menorCarga = Integer.MAX_VALUE;
+        for (String procesador : cargaProcesadores.keySet()) {
+            if (procesadoresRestantes.contains(procesador)){
+                int cargaActual = cargaProcesadores.get(procesador);
+                if (cargaActual < menorCarga){
+                    menorCarga = cargaActual;
+                    idMenor = procesador;
+                }
+            }
+        }
+        return idMenor;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     public static void asignarTareasGreedy(int[] tiemposTareas, int mProcesadores) {
         // Inicializamos las cargas de los procesadores en 0
         int[] cargaProcesadores = new int[mProcesadores];
