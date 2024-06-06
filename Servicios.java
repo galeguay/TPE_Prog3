@@ -192,7 +192,7 @@ public class Servicios {
     }
 
 
-    private Solucion asignarTareasGreedy(int tiempoLimitePNoRefrigerado, ArrayList<Tarea> tareasRestantes) {
+    public Solucion asignarTareasGreedy(int tiempoLimitePNoRefrigerado) {
         Solucion solucion = new Solucion();
         HashMap<String, Integer> cargaProcesadores = new HashMap<>();
 
@@ -203,25 +203,32 @@ public class Servicios {
             cargaProcesadores.put(p,0);
         }
 
-        Iterator<Tarea> itTareas = tareasRestantes.iterator();
-        while (itTareas.hasNext()) {
-            Tarea tareaActual = itTareas.next();
+        //ordena lista de tareas
+        List<Tarea> listaTareas= new ArrayList<>(tareas.values());
+        listaTareas.sort((t1, t2) -> Integer.compare(t2.getTiempoDeEjecucion(), t1.getTiempoDeEjecucion()));
 
-            //cargamos, en principio, todos los procesadores como posibles soluciones
-            ArrayList<String> procesadoresRestantes = new ArrayList<>();
-            for (String p : procesadores.keySet()) {
-                procesadoresRestantes.add(p);
-            }
+        Iterator<Tarea> itTareas = listaTareas.iterator();
+        //recorre todas las tareas
+        while (itTareas.hasNext()) {
             boolean asignada = false;
-            while(!asignada && !procesadoresRestantes.isEmpty() ) {
-                String procesadorMenorCarga = menorCarga(cargaProcesadores, procesadoresRestantes);
-                if (esFactible(solucionParcial, tareaActual, procesadorMenorCarga, tiempoLimitePNoRefrigerado)) {
-                    solucionParcial.get(procesadorMenorCarga).add(tareaActual);
-                    asignada = true;
-                }else {
-                    //descartamos el procesador como solucion para la tarea actual, ya que no es factible
-                    procesadoresRestantes.remove(procesadorMenorCarga);
-                }
+            Tarea tareaActual = itTareas.next();
+            int cargaMinima=menorCarga(solucionParcial);
+
+            //recorre todos los procesadores
+            for(String procesador:solucionParcial.keySet()) {
+                //Pregunta si la tarea ya fue asignada
+
+                    //Pregunta si la carga actual del procesador + el tiempo de la tarea es menor (<)  a la carga minima actual + el tiempo de la tarea
+                    if ((cargaProcesadores.get(procesador) + tareaActual.getTiempoDeEjecucion()) <= (cargaMinima + tareaActual.getTiempoDeEjecucion())
+                            && (esFactible(solucionParcial, tareaActual, procesador, tiempoLimitePNoRefrigerado))) {
+
+                        solucionParcial.get(procesador).add(tareaActual);
+                        //Le suma al procesador el tiempo de la tarea
+                        cargaProcesadores.put(procesador,cargaProcesadores.get(procesador)+tareaActual.getTiempoDeEjecucion());
+                        
+                        break;
+                    }
+
             }
         }
 
@@ -245,23 +252,21 @@ public class Servicios {
 
     /**
      * Devuelve el ID del procesador con menor carga, de entre los considerados que contiene la lista pasada por parametros
-     * @param cargaProcesadores
-     * @param procesadoresRestantes
+
      * @return
      */
-    private String menorCarga(HashMap<String, Integer> cargaProcesadores, List<String> procesadoresRestantes){
-        String idMenor = "";
-        int menorCarga = Integer.MAX_VALUE;
-        for (String procesador : cargaProcesadores.keySet()) {
-            if (procesadoresRestantes.contains(procesador)){
-                int cargaActual = cargaProcesadores.get(procesador);
-                if (cargaActual < menorCarga){
-                    menorCarga = cargaActual;
-                    idMenor = procesador;
-                }
+    private int menorCarga(HashMap<String, ArrayList<Tarea>> solucionParcial) {
+        int cargaMinima =Integer.MAX_VALUE ;
+        for (String procesador : solucionParcial.keySet()) {
+            Integer suma = 0;
+            for (Tarea t : solucionParcial.get(procesador)) {
+                suma += t.getTiempoDeEjecucion();
+            }
+            if (suma < cargaMinima) {
+                cargaMinima = suma;
             }
         }
-        return idMenor;
+        return cargaMinima;
     }
 
 }
