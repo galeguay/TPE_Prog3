@@ -10,6 +10,8 @@ public class Solucion {
     HashMap<String, ArrayList<Tarea>> solucion = new HashMap<>();
     int metrica;
     int tiempoSolucion;
+    String nombreAlgoritmo = "";
+    ArrayList<Tarea> tareasNoAsignadas = new ArrayList<>();
 
     public HashMap<String, ArrayList<Tarea>> getHashSolucion() {
         return solucion;
@@ -54,12 +56,21 @@ public class Solucion {
         return maxCarga;
     }
 
+    public ArrayList<Tarea> getTareasNoAsignadas() {
+        return tareasNoAsignadas;
+    }
+
+    public void setTareasNoAsignadas(ArrayList<Tarea> tareasNoAsignadas) {
+        this.tareasNoAsignadas = tareasNoAsignadas;
+    }
+
     @Override
     public String toString() {
-        return GREEN + " + \"FINAL DE BACKTRACKING\"" +
+        return GREEN + "SOLUCION "+ nombreAlgoritmo +
                 "\nSolución: " + solucion +
                 "\nMétrica=" + metrica +
-                "\nTiempo de solución obtenida: " + tiempoSolucion;
+                "\nTiempo de solución obtenida: " + tiempoSolucion +
+                "\nTareas no asignadas : " + tareasNoAsignadas.toString() + "(Por máximo de tareas criticas. Ej 3 tareas criticas para 1 procesador. Tareas que exeden el timepo limite y no hay procesadores refrigerados)";
     }
 
 

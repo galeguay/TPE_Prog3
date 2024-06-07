@@ -8,7 +8,7 @@ import java.io.InputStreamReader;
 public class Main {
 
 	public static void main(String args[]) {
-		Servicios servicios = new Servicios("datasets/Procesadores.csv", "datasets/TareasNuestro.txt");
+		Servicios servicios = new Servicios("datasets/Procesadores.csv", "datasets/TareasNuestro2.txt");
 		Solucion solucion = servicios.asignarTareasGreedy(100);
 		System.out.println(solucion.toString());
 /*		// SERIVICIO 1

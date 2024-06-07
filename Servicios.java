@@ -72,6 +72,7 @@ public class Servicios {
 
     private Solucion mejorSolucion = new Solucion();
 
+    //COMPLEJIDAD TEMPORAL:
     public Solucion asignarTareasBacktracking(int tiempoLimitePNoRefrigerado) {
         LIMITE_PROCESADOR_NO_R = tiempoLimitePNoRefrigerado;
         mejorSolucion.setTiempoSolucion(Integer.MAX_VALUE);
@@ -84,9 +85,9 @@ public class Servicios {
 
         backtracking(tareas, solucionParcial);
 
-
         return mejorSolucion;
     }
+
 
     private void backtracking(HashMap<String, Tarea> tareasRestantes, HashMap<String, ArrayList<Tarea>> solucionParcial) {
         if (tareasRestantes.isEmpty()) {
@@ -148,6 +149,8 @@ public class Servicios {
 
     /**
      * Devuelve el valor de tiempo del procesador que tenga mayor tiempo de ejecución.
+     *
+     * COMPLEJIDAD TEMPORAL: P x N (Proc)
      * @param solucionParcial
      * @return
      */
@@ -194,6 +197,7 @@ public class Servicios {
     public Solucion asignarTareasGreedy(int tiempoLimitePNoRefrigerado) {
         Solucion solucion = new Solucion();
         HashMap<String, Integer> cargaProcesadores = new HashMap<>();
+        ArrayList tareasNoAsignadas = new ArrayList();
         int considerados = 0;
 
         //preparar hash solucion vacio que contendra el id de los procesadores con la lista de tareas a ejecutar
@@ -229,10 +233,14 @@ public class Servicios {
                     considerados--;
                 }
             }
+            if(!asignada && procesadoresRestantes.isEmpty()){
+                tareasNoAsignadas.add(tareaActual);
+            }
         }
 
         solucion.setSolucion(solucionParcial);
         solucion.setMetrica(considerados);
+        solucion.setTareasNoAsignadas(tareasNoAsignadas);
         return solucion;
     }
 

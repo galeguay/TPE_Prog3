@@ -12,6 +12,6 @@ T12;Tarea12;10;false;31
 T13;Tarea13;100;false;70
 T14;Tarea14;21;false;58
 T15;Tarea15;50;true;92
-T16;Tarea16;10;false;31
-T17;Tarea17;100;false;70
+T16;Tarea16;10;true;31
+T17;Tarea17;100;true;70
 T18;Tarea18;20;true;58
