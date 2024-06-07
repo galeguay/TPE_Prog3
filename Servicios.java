@@ -72,7 +72,7 @@ public class Servicios {
 
     private Solucion mejorSolucion = new Solucion();
 
-    public Solucion asignacionTareasBacktracking(int tiempoLimitePNoRefrigerado) {
+    public Solucion asignarTareasBacktracking(int tiempoLimitePNoRefrigerado) {
         LIMITE_PROCESADOR_NO_R = tiempoLimitePNoRefrigerado;
         mejorSolucion.setTiempoSolucion(Integer.MAX_VALUE);
 
@@ -191,10 +191,10 @@ public class Servicios {
         }
     }
 
-
-    private Solucion asignarTareasGreedy(int tiempoLimitePNoRefrigerado, ArrayList<Tarea> tareasRestantes) {
+    public Solucion asignarTareasGreedy(int tiempoLimitePNoRefrigerado) {
         Solucion solucion = new Solucion();
         HashMap<String, Integer> cargaProcesadores = new HashMap<>();
+        int considerados = 0;
 
         //preparar hash solucion vacio que contendra el id de los procesadores con la lista de tareas a ejecutar
         HashMap<String, ArrayList<Tarea>> solucionParcial = new HashMap<>();
@@ -203,9 +203,14 @@ public class Servicios {
             cargaProcesadores.put(p,0);
         }
 
-        Iterator<Tarea> itTareas = tareasRestantes.iterator();
+        //ordena lista de tareas
+        List<Tarea> tareasOrdenadas= new ArrayList<>(tareas.values());
+        tareasOrdenadas.sort((t1, t2) -> Integer.compare(t2.getTiempoDeEjecucion(), t1.getTiempoDeEjecucion()));
+
+        Iterator<Tarea> itTareas = tareasOrdenadas.iterator();
         while (itTareas.hasNext()) {
             Tarea tareaActual = itTareas.next();
+            considerados+=solucionParcial.size();
 
             //cargamos, en principio, todos los procesadores como posibles soluciones
             ArrayList<String> procesadoresRestantes = new ArrayList<>();
@@ -220,12 +225,14 @@ public class Servicios {
                     asignada = true;
                 }else {
                     //descartamos el procesador como solucion ya que no es factible, para la tarea actual
-                    procesadoresRestantes.remove();
+                    procesadoresRestantes.remove(procesadorMenorCarga);
+                    considerados--;
                 }
             }
         }
 
         solucion.setSolucion(solucionParcial);
+        solucion.setMetrica(considerados);
         return solucion;
     }
 
