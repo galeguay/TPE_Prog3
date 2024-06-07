@@ -88,7 +88,11 @@ public class Servicios {
         return mejorSolucion;
     }
 
+
+    //COMPLEJIDAD: O((P*T)+((P*P^T)*T)) Donde P es la cantidad de procesadores y T la cantidad de tareas
     private void backtracking(HashMap<String, Tarea> tareasRestantes, HashMap<String, ArrayList<Tarea>> solucionParcial) {
+
+       //COMPLEJIDAD: O(P*T)
         if (tareasRestantes.isEmpty()) {
             //si no quedan tareas por asignar, se llegó a una solución
             System.out.println("No hay tareas restantes");
@@ -105,12 +109,15 @@ public class Servicios {
                 reemplazarMejorSolucion(solucionParcial);
             }
         } else {
+            //COMPLEJIDAD: O((P*P^T)*T)
             for (Map.Entry<String, Tarea> entry : tareasRestantes.entrySet()) {
                 String tareaId = entry.getKey();
                 Tarea tareaActual = entry.getValue();
 
                 HashMap<String, Tarea> copiaTareasRestantes = new HashMap<>(tareasRestantes);
                 copiaTareasRestantes.remove(tareaId);
+
+                //COMPLEJIDAD: O(P*P^T)
                 for (String procesador : procesadores.keySet()) {
                     int i = 0;
 
@@ -128,12 +135,14 @@ public class Servicios {
 
                             //poda: si el tiempo maximo parcial supera ya al mejor tiempo
                             if (max(solucionParcial) < mejorSolucion.getTiempoSolucion()) {
+                                //COMPLEJIDAD: O(P^T)
                                 backtracking(copiaTareasRestantes, solucionParcial);
                             } else System.out.println(tareaActual + " se hizo PODA. TiempoActual: " + max(solucionParcial) + ", mejor solución: " + mejorSolucion.getTiempoSolucion());
                         } else System.out.println("salta por CONDICIÓN 2");
                     } else System.out.println("salta por CONDICIÓN 1");
                     System.out.println();
                     //quitar tarea actual del procesador actual
+                    //COMPLEJIDAD: O(P)
                     for (int j = 0; j < solucionParcial.get(procesador).size(); j++) {
                         if (solucionParcial.get(procesador).get(j).getID().equals(tareaActual.getID())) {
                             solucionParcial.get(procesador).remove(j);
@@ -151,6 +160,7 @@ public class Servicios {
      * @param solucionParcial
      * @return
      */
+    //COMPLEJIDAD: O(P*T)
     private Integer max(HashMap<String, ArrayList<Tarea>> solucionParcial) {
         Integer maxCarga = 0;
         for (String procesador : solucionParcial.keySet()) {
@@ -170,6 +180,7 @@ public class Servicios {
      * @param tareasDelProcesador
      * @return
      */
+    //COMPLEJIDAD: O(T)
     private boolean limiteCriticas(ArrayList<Tarea> tareasDelProcesador) {
         int contador = 0;
         for (Tarea t : tareasDelProcesador) {
@@ -179,6 +190,7 @@ public class Servicios {
         return contador >= 2;
     }
 
+    //COMPLEJIDAD: O(P*T)
     private void reemplazarMejorSolucion(HashMap<String, ArrayList<Tarea>> solucionParcial){
         mejorSolucion.getHashSolucion().clear();
 
@@ -191,11 +203,13 @@ public class Servicios {
         }
     }
 
+    //COMPLEJIDAD: O(P+(T*logT)+(P+T))
     public Solucion asignarTareasGreedy(int tiempoLimitePNoRefrigerado) {
         Solucion solucion = new Solucion();
         HashMap<String, Integer> cargaProcesadores = new HashMap<>();
         int considerados = 0;
 
+        //COMPLEJIDAD: O(P)
         //preparar hash solucion vacio que contendra el id de los procesadores con la lista de tareas a ejecutar
         HashMap<String, ArrayList<Tarea>> solucionParcial = new HashMap<>();
         for (String p : procesadores.keySet()) {
@@ -205,26 +219,38 @@ public class Servicios {
 
         //ordena lista de tareas
         List<Tarea> tareasOrdenadas= new ArrayList<>(tareas.values());
+
+        //COMPLEJIDAD: O(T*logT)
         tareasOrdenadas.sort((t1, t2) -> Integer.compare(t2.getTiempoDeEjecucion(), t1.getTiempoDeEjecucion()));
 
         Iterator<Tarea> itTareas = tareasOrdenadas.iterator();
+
+        //COMPLEJIDAD: O(P+(P+T)) -> O(P+T)
         while (itTareas.hasNext()) {
             Tarea tareaActual = itTareas.next();
             considerados+=solucionParcial.size();
 
             //cargamos, en principio, todos los procesadores como posibles soluciones
             ArrayList<String> procesadoresRestantes = new ArrayList<>();
+
+            //COMPLEJIDAD: O(P)
             for (String p : procesadores.keySet()) {
                 procesadoresRestantes.add(p);
             }
             boolean asignada = false;
+
+            //COMPLEJIDAD: O(P+T)
             while(!asignada && !procesadoresRestantes.isEmpty() ) {
+                //COMPLEJIDAD: O(P)
                 String procesadorMenorCarga = menorCarga(cargaProcesadores, procesadoresRestantes);
+                //COMPLEJIDAD: O(T)
                 if (esFactible(solucionParcial, tareaActual, procesadorMenorCarga, tiempoLimitePNoRefrigerado)) {
                     solucionParcial.get(procesadorMenorCarga).add(tareaActual);
+                    cargaProcesadores.put(procesadorMenorCarga,cargaProcesadores.get(procesadorMenorCarga)+tareaActual.getTiempoDeEjecucion());
                     asignada = true;
                 }else {
                     //descartamos el procesador como solucion ya que no es factible, para la tarea actual
+                    //COMPLEJIDAD: O(P)
                     procesadoresRestantes.remove(procesadorMenorCarga);
                     considerados--;
                 }
@@ -236,6 +262,7 @@ public class Servicios {
         return solucion;
     }
 
+    //COMPLEJIDAD: O(T)
     private boolean esFactible(HashMap<String, ArrayList<Tarea>> solucionParcial, Tarea tareaActual, String procesador, int tiempoLimitePNoRefrigerado){
 
         //CONDICIÓN 1: chequear si hay 2 criticas ya en la lista del procesador actual
@@ -256,6 +283,7 @@ public class Servicios {
      * @param procesadoresRestantes
      * @return
      */
+    //COMPLEJIDAD: O(P)
     private String menorCarga(HashMap<String, Integer> cargaProcesadores, List<String> procesadoresRestantes){
         String idMenor = "";
         int menorCarga = Integer.MAX_VALUE;
