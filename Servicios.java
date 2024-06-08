@@ -91,12 +91,14 @@ public class Servicios {
 
     public void backtracking(int tareaIndex, List<Tarea> listaTareas, HashMap<String, ArrayList<Tarea>> solucionParcial) {
         mejorSolucion.sumarMetrica(); // Acá se toma la métrica, lo dijo el ayudante
-
+        System.out.println(solucionParcial);
         // Si hemos asignado todas las tareas, evaluamos la solución
         if (tareaIndex == listaTareas.size()) {
             Integer tiempoSolucionActual = max(solucionParcial);
+            System.out.println("primer if");
 
             if (tiempoSolucionActual < mejorSolucion.getTiempoSolucion()) {
+                System.out.println("segundo if");
                 mejorSolucion.setTiempoSolucion(tiempoSolucionActual);
                 reemplazarMejorSolucion(solucionParcial);
             }
@@ -105,16 +107,24 @@ public class Servicios {
 
         // Obtenemos la tarea actual a asignar
         Tarea tareaActual = listaTareas.get(tareaIndex);
-
         for (String procesador : procesadores.keySet()) {
-            // Agregar tarea actual al procesador actual
-            solucionParcial.get(procesador).add(tareaActual);
+            //CONDICIÓN 1: chequear si hay 2 criticas ya en la lista del procesador actual
+            if (!tareaActual.isCritica() || !limiteCriticas(solucionParcial.get(procesador))) {
+                //CONDICIÓN 2: si el procesador no es refrigerado, el tiempo de la tarea no debe superar el limite máximo ingresado
+                if (procesadores.get(procesador).isRefrigerado() || (tareaActual.getTiempoDeEjecucion() < LIMITE_PROCESADOR_NO_R)) {
+                    //poda: si el tiempo maximo parcial supera ya al mejor tiempo
 
-            // Llamada recursiva para la siguiente tarea
-            backtracking(tareaIndex + 1, listaTareas, solucionParcial);
+                    // Agregar tarea actual al procesador actual
+                    solucionParcial.get(procesador).add(tareaActual);
+                    if (max(solucionParcial) < mejorSolucion.getTiempoSolucion()) {
+                        // Llamada recursiva para la siguiente tarea
+                        backtracking(tareaIndex + 1, listaTareas, solucionParcial);
 
-            // Quitar tarea actual del procesador actual (backtracking)
-            solucionParcial.get(procesador).remove(solucionParcial.get(procesador).size() - 1);
+                    }
+                    // Quitar tarea actual del procesador actual (backtracking)
+                    solucionParcial.get(procesador).remove(solucionParcial.get(procesador).size() - 1);
+                }
+            }
         }
     }
 

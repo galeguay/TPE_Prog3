@@ -9,8 +9,8 @@ public class Main {
 
 
 	public static void main(String args[]) {
-		Servicios servicios = new Servicios("datasets/Procesadores.csv", "datasets/TareasNuestro.csv");
-		Solucion solucion = servicios.asignarTareasBacktracking(100);
+		Servicios servicios = new Servicios("datasets/Procesadores.csv", "datasets/TareasNuestro2.csv");
+		Solucion solucion = servicios.asignarTareasBacktracking(1000);
 		System.out.println(solucion.toString());
 /*		// SERIVICIO 1
 		System.out.println(servicios.servicio1("T3"));*/
