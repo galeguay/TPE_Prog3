@@ -91,14 +91,12 @@ public class Servicios {
 
     public void backtracking(int tareaIndex, List<Tarea> listaTareas, HashMap<String, ArrayList<Tarea>> solucionParcial) {
         mejorSolucion.sumarMetrica(); // Acá se toma la métrica, lo dijo el ayudante
-        System.out.println(solucionParcial);
+
         // Si hemos asignado todas las tareas, evaluamos la solución
         if (tareaIndex == listaTareas.size()) {
             Integer tiempoSolucionActual = max(solucionParcial);
-            System.out.println("primer if");
 
             if (tiempoSolucionActual < mejorSolucion.getTiempoSolucion()) {
-                System.out.println("segundo if");
                 mejorSolucion.setTiempoSolucion(tiempoSolucionActual);
                 reemplazarMejorSolucion(solucionParcial);
             }
@@ -107,104 +105,47 @@ public class Servicios {
 
         // Obtenemos la tarea actual a asignar
         Tarea tareaActual = listaTareas.get(tareaIndex);
+        //boolean asignada = false;
+        boolean[] asignada = new boolean[solucionParcial.size()];
+        int indexAsignada = 0;
         for (String procesador : procesadores.keySet()) {
+
             //CONDICIÓN 1: chequear si hay 2 criticas ya en la lista del procesador actual
             if (!tareaActual.isCritica() || !limiteCriticas(solucionParcial.get(procesador))) {
                 //CONDICIÓN 2: si el procesador no es refrigerado, el tiempo de la tarea no debe superar el limite máximo ingresado
                 if (procesadores.get(procesador).isRefrigerado() || (tareaActual.getTiempoDeEjecucion() < LIMITE_PROCESADOR_NO_R)) {
-                    //poda: si el tiempo maximo parcial supera ya al mejor tiempo
 
                     // Agregar tarea actual al procesador actual
                     solucionParcial.get(procesador).add(tareaActual);
+                    asignada[indexAsignada]=true;
+
+                    //poda: si el tiempo maximo parcial supera ya al mejor tiempo
                     if (max(solucionParcial) < mejorSolucion.getTiempoSolucion()) {
                         // Llamada recursiva para la siguiente tarea
                         backtracking(tareaIndex + 1, listaTareas, solucionParcial);
-
                     }
                     // Quitar tarea actual del procesador actual (backtracking)
                     solucionParcial.get(procesador).remove(solucionParcial.get(procesador).size() - 1);
                 }
             }
+            indexAsignada++;
+        }
+        //chequeo de Tareas No Asignada
+        boolean anyTrue = false;
+        for (boolean b : asignada) {
+            if (b) {
+                anyTrue = true;
+                break;
+            }
+        }
+        if (!anyTrue){
+            backtracking(tareaIndex + 1, listaTareas, solucionParcial);
+            mejorSolucion.setTareaNoAsignada(tareaActual);
         }
     }
 
 
-    //COMPLEJIDAD: O((P*T)+((P*P^T)*T)) Donde P es la cantidad de procesadores y T la cantidad de tareas
-    private void backtracking(HashMap<String, Tarea> tareasRestantes, HashMap<String, ArrayList<Tarea>> solucionParcial) {
-
-        //COMPLEJIDAD: O(P*T)
-        if (tareasRestantes.isEmpty()) {
-            //si no quedan tareas por asignar, se llegó a una solución
-            System.out.println("No hay tareas restantes");
-
-            //obtenermos el tiempo de la solucion actual y lo comparamos con el mejor obtenido hasta el momento
-            Integer tiempoSolucionActual = max(solucionParcial);
-            System.out.println("solucionParcial: " + solucionParcial);
-            System.out.println("tiempoSolucionActual: " + tiempoSolucionActual);
-            System.out.println("tiempoMejorSolucion: " + mejorSolucion.getTiempoSolucion());
-            if (tiempoSolucionActual < mejorSolucion.getTiempoSolucion()) {
-                System.out.println(YELLOW + "Solución actual es mejor" + RESET);
-                System.out.println();
-                mejorSolucion.setTiempoSolucion(tiempoSolucionActual);
-                reemplazarMejorSolucion(solucionParcial);
-            }
-        } else {
-            //COMPLEJIDAD: O((P*P^T)*T)
-            for (Map.Entry<String, Tarea> entry : tareasRestantes.entrySet()) {
-                String tareaId = entry.getKey();
-                Tarea tareaActual = entry.getValue();
-
-                HashMap<String, Tarea> copiaTareasRestantes = new HashMap<>(tareasRestantes);
-                copiaTareasRestantes.remove(tareaId);
-
-                //COMPLEJIDAD: O(P*P^T)
-                for (String procesador : procesadores.keySet()) {
-                    int i = 0;
-
-                    //CONDICIÓN 1: chequear si hay 2 criticas ya en la lista del procesador actual
-                    if (!tareaActual.isCritica() || !limiteCriticas(solucionParcial.get(procesador))) {
-                        //CONDICIÓN 2: si el procesador no es refrigerado, el tiempo de la tarea no debe superar el limite máximo ingresado
-                        if (procesadores.get(procesador).isRefrigerado() || (tareaActual.getTiempoDeEjecucion() < LIMITE_PROCESADOR_NO_R)) {
-
-                            //se contabiliza un estado nuevo al asignar la tarea al procesador
-                            mejorSolucion.sumarMetrica();
-
-                            solucionParcial.get(procesador).add(tareaActual);
-                            System.out.println(tareaActual.toString() + " --> " + procesador);
-                            System.out.println("solucionActual: " + solucionParcial);
-
-                            //poda: si el tiempo maximo parcial supera ya al mejor tiempo
-                            if (max(solucionParcial) < mejorSolucion.getTiempoSolucion()) {
-                                //COMPLEJIDAD: O(P^T)
-                                backtracking(copiaTareasRestantes, solucionParcial);
-                            } else
-                                System.out.println(tareaActual + " se hizo PODA. TiempoActual: " + max(solucionParcial) + ", mejor solución: " + mejorSolucion.getTiempoSolucion());
-                        } else System.out.println("salta por CONDICIÓN 2");
-                    } else System.out.println("salta por CONDICIÓN 1");
-                    System.out.println();
-                    //quitar tarea actual del procesador actual
-                    //COMPLEJIDAD: O(P)
-                    for (int j = 0; j < solucionParcial.get(procesador).size(); j++) {
-                        if (solucionParcial.get(procesador).get(j).getID().equals(tareaActual.getID())) {
-                            solucionParcial.get(procesador).remove(j);
-                            break;
-                        }
-                    }
-                    i++;
-                }
-            }
-        }
-    }
-
-    /**
-     * Devuelve el valor de tiempo del procesador que tenga mayor tiempo de ejecución.
-     * <p>
-     * COMPLEJIDAD TEMPORAL: P x N (Proc)
-     *
-     * @param solucionParcial
-     * @return
-     */
-//COMPLEJIDAD: O(P*T)
+    //COMPLEJIDAD: O(P*T)
     private Integer max(HashMap<String, ArrayList<Tarea>> solucionParcial) {
         Integer maxCarga = 0;
         for (String procesador : solucionParcial.keySet()) {
@@ -225,7 +166,7 @@ public class Servicios {
      * @param tareasDelProcesador
      * @return
      */
-//COMPLEJIDAD: O(T)
+    //COMPLEJIDAD: O(T)
     private boolean limiteCriticas(ArrayList<Tarea> tareasDelProcesador) {
         int contador = 0;
         for (Tarea t : tareasDelProcesador) {

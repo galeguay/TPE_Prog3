@@ -1,9 +1,14 @@
 package tpe.model;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+
+
 public class Nodo {
     private Tarea tarea;
     private Nodo menor;
     private Nodo mayor;
+    private ArrayList<Tarea> iguales = new ArrayList<>();
 
     public Nodo(Tarea tarea) {
         this.tarea = tarea;
@@ -32,4 +37,17 @@ public class Nodo {
     public void setMayor(Nodo mayor) {
         this.mayor = mayor;
     }
+
+    public void agregarIgual(Tarea t){
+        iguales.add(t);
+    }
+
+    public Iterator<Tarea> getIguales(){
+        return this.iguales.iterator();
+    }
+
+    public boolean tieneIguales(){
+        return !this.iguales.isEmpty();
+    }
+
 }

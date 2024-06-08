@@ -64,6 +64,11 @@ public class Solucion {
         this.tareasNoAsignadas = tareasNoAsignadas;
     }
 
+    public void setTareaNoAsignada(Tarea tareaNoAsignada){
+        if(!this.tareasNoAsignadas.contains(tareaNoAsignada))
+            tareasNoAsignadas.add(tareaNoAsignada);
+    }
+
     public String getNombreAlgoritmo() {
         return nombreAlgoritmo;
     }

@@ -1,18 +1,19 @@
 package tpe;
 
 import tpe.model.Solucion;
+import tpe.model.Tarea;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.List;
 
 public class Main {
 
-
 	public static void main(String args[]) {
-		Servicios servicios = new Servicios("datasets/Procesadores.csv", "datasets/TareasNuestro2.csv");
-		Solucion solucion = servicios.asignarTareasBacktracking(1000);
+		Servicios servicios = new Servicios("datasets/ProcesadoresNuestro.csv", "datasets/TareaNuestro3.csv");
+/*		Solucion solucion = servicios.asignarTareasBacktracking(110);
 		System.out.println(solucion.toString());
-/*		// SERIVICIO 1
+		// SERIVICIO 1
 		System.out.println(servicios.servicio1("T3"));*/
 
 /*		// SERIVICIO 2
@@ -22,11 +23,11 @@ public class Main {
 		System.out.println(salidaServicio2);*/
 
 		// SERIVICIO 3
-/*		int priridadMenor = inputServicio3("Ingrese la prioridad menor del rango:");
+		int priridadMenor = inputServicio3("Ingrese la prioridad menor del rango:");
 		int priridadMayor = inputServicio3("Ingrese la prioridad mayor del rango:");
 		List<Tarea> salidaServicio3 = servicios.servicio3(priridadMenor, priridadMayor);
-		System.out.println(salidaServicio3);
-*/
+		System.out.println(salidaServicio3.toString());
+
 
 
 	}

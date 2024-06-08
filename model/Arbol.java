@@ -1,6 +1,7 @@
 package tpe.model;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public class Arbol {
@@ -11,7 +12,7 @@ public class Arbol {
         if (this.root == null)
             this.root = new Nodo(tarea);
         else
-            this.add(this.root,tarea);
+            this.add(this.root, tarea);
     }
 
     private void add(Nodo actual, Tarea tarea) {
@@ -21,23 +22,26 @@ public class Arbol {
                 Nodo temp = new Nodo(tarea);
                 actual.setMenor(temp);
             } else {
-                add(actual.getMenor(),tarea);
+                add(actual.getMenor(), tarea);
             }
         } else if (actual.getTarea().getPrioridad() < tarea.getPrioridad()) {
             if (actual.getMayor() == null) {
                 Nodo temp = new Nodo(tarea);
                 actual.setMayor(temp);
             } else {
-                add(actual.getMayor(),tarea);
+                add(actual.getMayor(), tarea);
             }
+        } else if (actual.getTarea().getPrioridad() == tarea.getPrioridad()) {
+            actual.agregarIgual(tarea);
         }
     }
 
-    public void printPreOrder(){
+    public void printPreOrder() {
         printPreOrder(this.root);
     }
-    private void printPreOrder(Nodo nodo){
-        if(nodo!=null){
+
+    private void printPreOrder(Nodo nodo) {
+        if (nodo != null) {
             printPreOrder(nodo.getMenor());
             System.out.println(nodo.getTarea().toString());
             printPreOrder(nodo.getMayor());
@@ -46,29 +50,26 @@ public class Arbol {
 
     public List<Tarea> enlistarRangoPrioridad(int prioridadInferior, int prioridadSuperior) {
         ArrayList<Tarea> tareasFiltradas = new ArrayList<>();
-        enlistarRangoRecu(root, tareasFiltradas,  prioridadInferior, prioridadSuperior);
+        enlistarRangoRecu(root, tareasFiltradas, prioridadInferior, prioridadSuperior);
         return tareasFiltradas;
     }
 
-    private void enlistarRangoRecu(Nodo nodo, List<Tarea> tareasFiltradas, int piso, int techo){
-        if(nodo!=null){
+    private void enlistarRangoRecu(Nodo nodo, List<Tarea> tareasFiltradas, int piso, int techo) {
+        if (nodo != null) {
             int prioridadActual = nodo.getTarea().getPrioridad();
-            if((prioridadActual >= piso) && (prioridadActual <= techo)) {
+            if ((prioridadActual >= piso) && (prioridadActual <= techo)) {
                 tareasFiltradas.add(nodo.getTarea());
+                if (nodo.tieneIguales()) {
+                    Iterator<Tarea> tareasIguales = nodo.getIguales();
+                    while (tareasIguales.hasNext()) {
+                        Tarea tarea = tareasIguales.next();
+                        tareasFiltradas.add(tarea);
+                    }
+                }
             }
             enlistarRangoRecu(nodo.getMenor(), tareasFiltradas, piso, techo);
             enlistarRangoRecu(nodo.getMayor(), tareasFiltradas, piso, techo);
-/*
-            if(nodo.getTarea().getPrioridad() < piso){
-                enlistarRangoRecu(nodo.getMayor(), piso, techo);
-            }else if(nodo.getTarea().getPrioridad() >= piso) {
-                enlistarRangoRecu(nodo.getMenor(), piso, techo);
-            }
-
-            printPreOrder(nodo.getMenor());
-            System.out.println(nodo.getTarea().toString());
-            printPreOrder(nodo.getMayor());*/
         }
-    }
 
+    }
 }
