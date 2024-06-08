@@ -64,13 +64,21 @@ public class Solucion {
         this.tareasNoAsignadas = tareasNoAsignadas;
     }
 
+    public String getNombreAlgoritmo() {
+        return nombreAlgoritmo;
+    }
+
+    public void setNombreAlgoritmo(String nombreAlgoritmo) {
+        this.nombreAlgoritmo = nombreAlgoritmo;
+    }
+
     @Override
     public String toString() {
         return GREEN + "SOLUCION "+ nombreAlgoritmo +
                 "\nSolución: " + solucion +
                 "\nMétrica=" + metrica +
                 "\nTiempo de solución obtenida: " + tiempoSolucion +
-                "\nTareas no asignadas : " + tareasNoAsignadas.toString() + "(Por máximo de tareas criticas. Ej 3 tareas criticas para 1 procesador. Tareas que exeden el timepo limite y no hay procesadores refrigerados)";
+                "\nTareas no asignadas : " + tareasNoAsignadas.toString() + "(Por exeder el máximo de tareas criticas. Ej 3 tareas criticas para 1 procesador. Y/o por ejemplo tareas que exeden el timepo límite y no hay procesadores refrigerados)";
     }
 
 
