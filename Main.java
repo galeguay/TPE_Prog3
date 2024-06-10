@@ -10,27 +10,35 @@ import java.util.List;
 public class Main {
 
 	public static void main(String args[]) {
-		Servicios servicios = new Servicios("datasets/ProcesadoresNuestro.csv", "datasets/TareaNuestro3.csv");
-		Solucion solucion = servicios.asignarTareasBacktracking(110);
-		System.out.println(solucion.toString());
-		// SERIVICIO 1
+		//carga de tareas y procesadores
+		Servicios servicios = new Servicios("datasets/ProcesadoresNuestro.csv", "datasets/TareasNuestro3.csv");
+
+		Solucion solucionBack = servicios.asignarTareasBacktracking(10);
+		System.out.println(solucionBack.toString());
+
+		Solucion solucionGreedy = servicios.asignarTareasGreedy(10);
+		System.out.println(solucionGreedy.toString());
+
+/*		// SERVICIO 1
 		System.out.println(servicios.servicio1("T3"));
 
-/*		// SERIVICIO 2
+		// SERVICIO 2
 		System.out.println("¿Desea ver las tareas criticas o no criticas? Escriba \"c\" para criticas y \"nc\"");
 		boolean respuesta = inputServicio2();
 		List<Tarea> salidaServicio2 = servicios.servicio2(respuesta);
-		System.out.println(salidaServicio2);*/
+		System.out.println(salidaServicio2);
 
-		// SERIVICIO 3
+		// SERVICIO 3
 		int priridadMenor = inputServicio3("Ingrese la prioridad menor del rango:");
 		int priridadMayor = inputServicio3("Ingrese la prioridad mayor del rango:");
 		List<Tarea> salidaServicio3 = servicios.servicio3(priridadMenor, priridadMayor);
-		System.out.println(salidaServicio3.toString());
-
-
+		System.out.println(salidaServicio3.toString());*/
 
 	}
+
+	/**Se le solicita al usuario ingresar que tipo de tareas desea enlistar
+	 * @return
+	 */
 	public static boolean inputServicio2(){
 		String valor = "";
 		boolean respuesta = true;
@@ -46,6 +54,11 @@ public class Main {
 		return respuesta;
 	}
 
+	/**
+	 *
+	 * @param mensaje
+	 * @return
+	 */
 	public static Integer inputServicio3(String mensaje) {
 		System.out.println(mensaje);
 		Integer valorIngresado = -1;

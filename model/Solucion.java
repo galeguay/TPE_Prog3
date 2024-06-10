@@ -1,9 +1,12 @@
 package tpe.model;
 
+import tpe.utils.TextColor;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
 import static tpe.utils.TextColor.GREEN;
+import static tpe.utils.TextColor.RESET;
 
 public class Solucion {
 
@@ -79,11 +82,20 @@ public class Solucion {
 
     @Override
     public String toString() {
-        return GREEN + "SOLUCION "+ nombreAlgoritmo +
-                "\nSolución: " + solucion +
-                "\nMétrica=" + metrica +
-                "\nTiempo de solución obtenida: " + tiempoSolucion +
-                "\nTareas no asignadas : " + tareasNoAsignadas.toString() + "(Por exeder el máximo de tareas criticas. Ej 3 tareas criticas para 1 procesador. Y/o por ejemplo tareas que exeden el timepo límite y no hay procesadores refrigerados)";
+        String resp = "\n";
+
+        if(!tareasNoAsignadas.isEmpty())
+            resp += (TextColor.RED + "NO ES SOLUCION PARA TODAS LAS TAREAS (" + nombreAlgoritmo.toUpperCase() + ")");
+        else
+            resp += (GREEN + "SOLUCION "+ nombreAlgoritmo);
+
+        resp += "\nSolución: " + solucion +
+                "\nMétrica: " + metrica +
+                "\nTiempo de solución obtenida: " + tiempoSolucion;
+
+        if(!tareasNoAsignadas.isEmpty())
+            resp += "\nTareas no asignadas: " + tareasNoAsignadas + "\n(Por exeder el máximo de tareas criticas. Ej 3 tareas criticas para 1 procesador. Y/o por ejemplo tareas que exeden el timepo límite y no hay procesadores refrigerados)";
+        return resp;
     }
 
 

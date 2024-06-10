@@ -72,28 +72,32 @@ public class Servicios {
     public Solucion asignarTareasBacktracking(int tiempoLimitePNoRefrigerado) {
         LIMITE_PROCESADOR_NO_R = tiempoLimitePNoRefrigerado;
         mejorSolucion.setTiempoSolucion(Integer.MAX_VALUE);
+        mejorSolucion.setNombreAlgoritmo("Backtracking");
 
-        //preparar hash solucion vacio que contendra el id de los procesadores con la lista de tareas a ejecutar
+        // Se inicializa el hash solución y el de carga de procesadores
+        HashMap<String, Integer> cargaProcesadores = new HashMap<>();
         HashMap<String, ArrayList<Tarea>> solucionParcial = new HashMap<>();
         for (String p : procesadores.keySet()) {
             solucionParcial.put(p, new ArrayList<>());
+            cargaProcesadores.put(p, 0);
         }
 
-        // Convertir el HashMap a ArrayList
+        // Se convierte el HashMap en ArrayList
         List<Tarea> listaTareas = new ArrayList<>(tareas.values());
-        backtracking(0, listaTareas, solucionParcial);
+        backtracking(0, listaTareas, solucionParcial, cargaProcesadores);
         return mejorSolucion;
     }
 
 
-    /**Metodo recursivo que ejecuta el algoritmo Backtracking para obtener la asignación de tareas tal que el tiempo de ejecución sea el mínimo
+    /**Metodo recursivo que ejecuta el algoritmo Backtracking para obtener la asignación de tareas tal que el tiempo de ejecución sea el mínimo.
      * Estrategia:
      *
      * @param tareaIndex
      * @param listaTareas
      * @param solucionParcial
+     * @param cargaProcesadores
      */
-    public void backtracking(int tareaIndex, List<Tarea> listaTareas, HashMap<String, ArrayList<Tarea>> solucionParcial) {
+    public void backtracking(int tareaIndex, List<Tarea> listaTareas, HashMap<String, ArrayList<Tarea>> solucionParcial, HashMap<String, Integer> cargaProcesadores) {
         mejorSolucion.sumarMetrica();
 
         // Si hemos asignado todas las tareas, evaluamos la solución
@@ -113,24 +117,25 @@ public class Servicios {
         //El siguiente array se usa para el chequear aquellas tareas que no puedan ser asignadas en ninguno de los procesadores por las condiciones de consigna
         boolean[] asignada = new boolean[solucionParcial.size()];
         int indexAsignada = 0;
-        for (String procesador : procesadores.keySet()) {
+        for (String procesadorActual : procesadores.keySet()) {
 
-            //CONDICIÓN 1: chequear si hay 2 criticas ya en la lista del procesador actual
-            if (!tareaActual.isCritica() || !limiteCriticas(solucionParcial.get(procesador))) {
-                //CONDICIÓN 2: si el procesador no es refrigerado, el tiempo de la tarea no debe superar el limite máximo ingresado
-                if (procesadores.get(procesador).isRefrigerado() || (tareaActual.getTiempoDeEjecucion() < LIMITE_PROCESADOR_NO_R)) {
-
+            //CONDICIÓN 1: chequear si ya hay 2 criticas en la lista del procesador actual
+            if (!tareaActual.isCritica() || !limiteCriticas(solucionParcial.get(procesadorActual))) {
+                //CONDICIÓN 2: si el procesador es no refrigerado, el tiempo de las tareas no debe superar el limite máximo ingresado
+                if (procesadores.get(procesadorActual).isRefrigerado() || ((tareaActual.getTiempoDeEjecucion() + cargaProcesadores.get(procesadorActual)) <= LIMITE_PROCESADOR_NO_R)) {
                     // Agregar tarea actual al procesador actual
-                    solucionParcial.get(procesador).add(tareaActual);
+                    solucionParcial.get(procesadorActual).add(tareaActual);
+                    cargaProcesadores.put(procesadorActual, cargaProcesadores.get(procesadorActual) + tareaActual.getTiempoDeEjecucion());
                     asignada[indexAsignada]=true;
 
-                    //PODA: si el tiempo maximo parcial supera al tiempo de la mejor solucion se poda, ya que no tiene sentido recorrer el resto.
+                    //PODA: si el tiempo maximo parcial supera al tiempo de la mejor solucion: se poda, ya que no tiene sentido recorrer el resto.
                     if (max(solucionParcial) < mejorSolucion.getTiempoSolucion()) {
-                        backtracking(tareaIndex + 1, listaTareas, solucionParcial);
+                        backtracking(tareaIndex + 1, listaTareas, solucionParcial, cargaProcesadores);
                     }
 
                     // Quitar tarea actual del procesador actual
-                    solucionParcial.get(procesador).remove(solucionParcial.get(procesador).size() - 1);
+                    solucionParcial.get(procesadorActual).remove(solucionParcial.get(procesadorActual).size() - 1);
+                    cargaProcesadores.put(procesadorActual, cargaProcesadores.get(procesadorActual) - tareaActual.getTiempoDeEjecucion());
                 }
             }
             indexAsignada++;
@@ -144,8 +149,9 @@ public class Servicios {
                 break;
             }
         }
+        // Si no fue asignada la agrego a la solucion como Tarea No Asignada
         if (!anyTrue){
-            backtracking(tareaIndex + 1, listaTareas, solucionParcial);
+            backtracking(tareaIndex + 1, listaTareas, solucionParcial, cargaProcesadores);
             mejorSolucion.setTareaNoAsignada(tareaActual);
         }
     }
@@ -217,7 +223,7 @@ public class Servicios {
         int considerados = 0;
 
         //COMPLEJIDAD: O(P)
-        //preparar hash solucion vacio que contendra el id de los procesadores con la lista de tareas a ejecutar
+        //preparar HashMap solucion vacio que contendra el id de los procesadores con la lista de tareas a ejecutar
         HashMap<String, ArrayList<Tarea>> solucionParcial = new HashMap<>();
         for (String p : procesadores.keySet()) {
             solucionParcial.put(p, new ArrayList<>());
@@ -251,7 +257,8 @@ public class Servicios {
                 //COMPLEJIDAD: O(P)
                 String procesadorMenorCarga = menorCarga(cargaProcesadores, procesadoresRestantes);
                 //COMPLEJIDAD: O(T)
-                if (esFactible(solucionParcial, tareaActual, procesadorMenorCarga, tiempoLimitePNoRefrigerado)) {
+                // cehequea si es factible (si se cumplen las dos condiciones)
+                if (esFactible(solucionParcial, tareaActual, procesadorMenorCarga, tiempoLimitePNoRefrigerado, cargaProcesadores)) {
                     solucionParcial.get(procesadorMenorCarga).add(tareaActual);
                     cargaProcesadores.put(procesadorMenorCarga, cargaProcesadores.get(procesadorMenorCarga) + tareaActual.getTiempoDeEjecucion());
                     asignada = true;
@@ -262,6 +269,7 @@ public class Servicios {
                     considerados--;
                 }
             }
+            // si la tarea no fue asignada y no quedan procesadores por recorrer agrego la TareaActual a tareasNoAsignadas para mostrarla en la solucion
             if (!asignada && procesadoresRestantes.isEmpty()) {
                 tareasNoAsignadas.add(tareaActual);
             }
@@ -284,13 +292,13 @@ public class Servicios {
      * @param tiempoLimitePNoRefrigerado
      * @return
      */
-    private boolean esFactible(HashMap<String, ArrayList<Tarea>> solucionParcial, Tarea tareaActual, String procesador, int tiempoLimitePNoRefrigerado) {
+    private boolean esFactible(HashMap<String, ArrayList<Tarea>> solucionParcial, Tarea tareaActual, String procesador, int tiempoLimitePNoRefrigerado, HashMap<String, Integer> cargaProcesadores) {
 
-        //CONDICIÓN 1: chequear si hay 2 criticas ya en la lista del procesador actual
+        //CONDICIÓN 1: chequear si ya hay 2 criticas en la lista del procesador actual
         if (!tareaActual.isCritica() || !limiteCriticas(solucionParcial.get(procesador))) {
 
-            //CONDICIÓN 2: si el procesador no es refrigerado, el tiempo de la tarea no debe superar el limite máximo ingresado
-            if (procesadores.get(procesador).isRefrigerado() || (tareaActual.getTiempoDeEjecucion() < tiempoLimitePNoRefrigerado)) {
+            //CONDICIÓN 2: si el procesador es no refrigerado, se chequea que al agregar la tarea actual no supere el limite de tiempo
+            if (procesadores.get(procesador).isRefrigerado() || ((tareaActual.getTiempoDeEjecucion() + cargaProcesadores.get(procesador)) <= tiempoLimitePNoRefrigerado)) {
                 return true;
             }
             return false;
@@ -299,11 +307,11 @@ public class Servicios {
     }
 
     /**
-     * Devuelve el ID del procesador con menor carga, de entre los considerados que contiene la lista pasada por parametros
+     * Devuelve el ID del procesador con menor carga, de entre los considerados que contiene la lista pasada por parametro
      * COMPLEJIDAD: O(P)
      * @param cargaProcesadores
      * @param procesadoresRestantes
-     * @return
+     * @return String
      */
     private String menorCarga(HashMap<String, Integer> cargaProcesadores, List<String> procesadoresRestantes) {
         String idMenor = "";
