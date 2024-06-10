@@ -1,11 +1,16 @@
 package tpe.utils;
 
 
+import tpe.model.Arbol;
+import tpe.model.Procesador;
+import tpe.model.Tarea;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 
 public class CSVReader {
@@ -13,7 +18,7 @@ public class CSVReader {
 	public CSVReader() {
 	}
 	
-	public void readTasks(String taskPath) {
+	public void readTasks(String taskPath, Arbol arbol, HashMap<String, Tarea> tareas) {
 		
 		// Obtengo una lista con las lineas del archivo
 		// lines.get(0) tiene la primer linea del archivo
@@ -28,11 +33,15 @@ public class CSVReader {
 			Boolean critica = Boolean.parseBoolean(line[3].trim());
 			Integer prioridad = Integer.parseInt(line[4].trim());
 			// Aca instanciar lo que necesiten en base a los datos leidos
+
+			Tarea tarea = new Tarea(nombre, id, tiempo, critica, prioridad);
+			arbol.add(tarea);
+			tareas.put(tarea.getID(), tarea);
 		}
 		
 	}
 	
-public void readProcessors(String processorPath) {
+public void readProcessors(String processorPath, HashMap<String, Procesador> procesadores) {
 		
 		// Obtengo una lista con las lineas del archivo
 		// lines.get(0) tiene la primer linea del archivo
@@ -46,6 +55,8 @@ public void readProcessors(String processorPath) {
 			Boolean refrigerado = Boolean.parseBoolean(line[2].trim());
 			Integer anio = Integer.parseInt(line[3].trim());
 			// Aca instanciar lo que necesiten en base a los datos leidos
+			Procesador procesador= new Procesador(id,codigo,refrigerado,anio);
+			procesadores.put(procesador.getID(),procesador);
 		}
 		
 	}

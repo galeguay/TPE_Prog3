@@ -11,10 +11,10 @@ public class Main {
 
 	public static void main(String args[]) {
 		Servicios servicios = new Servicios("datasets/ProcesadoresNuestro.csv", "datasets/TareaNuestro3.csv");
-/*		Solucion solucion = servicios.asignarTareasBacktracking(110);
+		Solucion solucion = servicios.asignarTareasBacktracking(110);
 		System.out.println(solucion.toString());
 		// SERIVICIO 1
-		System.out.println(servicios.servicio1("T3"));*/
+		System.out.println(servicios.servicio1("T3"));
 
 /*		// SERIVICIO 2
 		System.out.println("¿Desea ver las tareas criticas o no criticas? Escriba \"c\" para criticas y \"nc\"");

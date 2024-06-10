@@ -4,11 +4,9 @@ import tpe.model.Procesador;
 import tpe.model.Solucion;
 import tpe.model.Tarea;
 import tpe.model.Arbol;
-import tpe.utils.CSVReaderCustom;
+import tpe.utils.CSVReader;
 
 import java.util.*;
-
-import static tpe.utils.TextColor.*;
 
 /**
  * NO modificar la interfaz de esta clase ni sus métodos públicos.
@@ -16,9 +14,14 @@ import static tpe.utils.TextColor.*;
  * de implementación.
  */
 public class Servicios {
+
     private HashMap<String, Tarea> tareas = new HashMap<>();
     private HashMap<String, Procesador> procesadores = new HashMap<>();
     private Arbol arbolTareas = new Arbol();
+
+    //PARA ETAPA 2
+    Integer LIMITE_PROCESADOR_NO_R;
+    private Solucion mejorSolucion = new Solucion();
 
 
     /* Complejidad temporal O(n):
@@ -27,7 +30,7 @@ public class Servicios {
         que dentro del metodo se hace una insercion a un arbol que es O(h), suponiendo que es un arbol balanceado. Y tambien se hace una
          insercion a un HashMap que es O(1). Ya que se supone el peor caso, como conclusion la Complejidad temporal O(n). */
     public Servicios(String pathProcesadores, String pathTareas) {
-        CSVReaderCustom reader = new CSVReaderCustom();
+        CSVReader reader = new CSVReader();
         reader.readProcessors(pathProcesadores, procesadores);
         reader.readTasks(pathTareas, arbolTareas, tareas);
     }
@@ -61,18 +64,11 @@ public class Servicios {
         return arbolTareas.enlistarRangoPrioridad(prioridadInferior, prioridadSuperior);
     }
 
-    public void imprimir() {
-        arbolTareas.printPreOrder();
-        for (String procesador : procesadores.keySet()) {
-            System.out.println(procesador.toString());
-        }
-    }
-
-    Integer LIMITE_PROCESADOR_NO_R;
-
-    private Solucion mejorSolucion = new Solucion();
-
-    //COMPLEJIDAD TEMPORAL:
+    /** (Resolución de etapa 2: Backtracking). Asigna las tareas usando Backtracking.
+     * COMPLEJIDAD: O(p^t) -> siendo p:procesadores y t:tareas
+     * @param tiempoLimitePNoRefrigerado
+     * @return
+     */
     public Solucion asignarTareasBacktracking(int tiempoLimitePNoRefrigerado) {
         LIMITE_PROCESADOR_NO_R = tiempoLimitePNoRefrigerado;
         mejorSolucion.setTiempoSolucion(Integer.MAX_VALUE);
@@ -89,8 +85,16 @@ public class Servicios {
         return mejorSolucion;
     }
 
+
+    /**Metodo recursivo que ejecuta el algoritmo Backtracking para obtener la asignación de tareas tal que el tiempo de ejecución sea el mínimo
+     * Estrategia:
+     *
+     * @param tareaIndex
+     * @param listaTareas
+     * @param solucionParcial
+     */
     public void backtracking(int tareaIndex, List<Tarea> listaTareas, HashMap<String, ArrayList<Tarea>> solucionParcial) {
-        mejorSolucion.sumarMetrica(); // Acá se toma la métrica, lo dijo el ayudante
+        mejorSolucion.sumarMetrica();
 
         // Si hemos asignado todas las tareas, evaluamos la solución
         if (tareaIndex == listaTareas.size()) {
@@ -105,7 +109,8 @@ public class Servicios {
 
         // Obtenemos la tarea actual a asignar
         Tarea tareaActual = listaTareas.get(tareaIndex);
-        //boolean asignada = false;
+
+        //El siguiente array se usa para el chequear aquellas tareas que no puedan ser asignadas en ninguno de los procesadores por las condiciones de consigna
         boolean[] asignada = new boolean[solucionParcial.size()];
         int indexAsignada = 0;
         for (String procesador : procesadores.keySet()) {
@@ -119,18 +124,19 @@ public class Servicios {
                     solucionParcial.get(procesador).add(tareaActual);
                     asignada[indexAsignada]=true;
 
-                    //poda: si el tiempo maximo parcial supera ya al mejor tiempo
+                    //PODA: si el tiempo maximo parcial supera al tiempo de la mejor solucion se poda, ya que no tiene sentido recorrer el resto.
                     if (max(solucionParcial) < mejorSolucion.getTiempoSolucion()) {
-                        // Llamada recursiva para la siguiente tarea
                         backtracking(tareaIndex + 1, listaTareas, solucionParcial);
                     }
-                    // Quitar tarea actual del procesador actual (backtracking)
+
+                    // Quitar tarea actual del procesador actual
                     solucionParcial.get(procesador).remove(solucionParcial.get(procesador).size() - 1);
                 }
             }
             indexAsignada++;
         }
-        //chequeo de Tareas No Asignada
+
+        //chequeo de tareas NO asignadas
         boolean anyTrue = false;
         for (boolean b : asignada) {
             if (b) {
@@ -144,8 +150,11 @@ public class Servicios {
         }
     }
 
-
-    //COMPLEJIDAD: O(P*T)
+    /**Obtiene el tiempo de la suma de tareas, del procesador con mayor carga.
+     * COMPLEJIDAD: O(p*t)
+     * @param solucionParcial
+     * @return
+     */
     private Integer max(HashMap<String, ArrayList<Tarea>> solucionParcial) {
         Integer maxCarga = 0;
         for (String procesador : solucionParcial.keySet()) {
@@ -166,7 +175,7 @@ public class Servicios {
      * @param tareasDelProcesador
      * @return
      */
-    //COMPLEJIDAD: O(T)
+    //COMPLEJIDAD: O(t)
     private boolean limiteCriticas(ArrayList<Tarea> tareasDelProcesador) {
         int contador = 0;
         for (Tarea t : tareasDelProcesador) {
@@ -176,7 +185,10 @@ public class Servicios {
         return contador >= 2;
     }
 
-    //COMPLEJIDAD: O(P*T)
+    /** Guarda la solucion parcial pasado por parámetro en la mejor solución. Lo hace recorriendo el HashMap de solucion parciol, y las listas de tareas asignada a cada procesador
+     * COMPLEJIDAD: O(p*t)
+     * @param solucionParcial
+     */
     private void reemplazarMejorSolucion(HashMap<String, ArrayList<Tarea>> solucionParcial) {
         mejorSolucion.getHashSolucion().clear();
 
@@ -189,6 +201,12 @@ public class Servicios {
         }
     }
 
+    /** (Resolución de etapa 2: Greedy). Asigna las tareas usando Greedy.
+     * Estrategia:
+     * 
+     * @param tiempoLimitePNoRefrigerado
+     * @return
+     */
     //COMPLEJIDAD: O(P+(T*logT)+(P+T))
     public Solucion asignarTareasGreedy(int tiempoLimitePNoRefrigerado) {
         Solucion solucion = new Solucion();
@@ -255,7 +273,17 @@ public class Servicios {
         return solucion;
     }
 
-    //COMPLEJIDAD: O(T)
+    /**Analiza si es viable agregar la tarea actual en el procesador actual, basandose en las siguientes restricciones:
+     * Ningún procesador podrá ejecutar más de 2 tareas crítica.
+     * Los procesadores no refrigerados no podrán dedicar más de X tiempo de ejecución a
+     * las tareas asignadas
+     * COMPLEJIDAD: O(T)
+     * @param solucionParcial
+     * @param tareaActual
+     * @param procesador
+     * @param tiempoLimitePNoRefrigerado
+     * @return
+     */
     private boolean esFactible(HashMap<String, ArrayList<Tarea>> solucionParcial, Tarea tareaActual, String procesador, int tiempoLimitePNoRefrigerado) {
 
         //CONDICIÓN 1: chequear si hay 2 criticas ya en la lista del procesador actual
@@ -272,12 +300,11 @@ public class Servicios {
 
     /**
      * Devuelve el ID del procesador con menor carga, de entre los considerados que contiene la lista pasada por parametros
-     *
+     * COMPLEJIDAD: O(P)
      * @param cargaProcesadores
      * @param procesadoresRestantes
      * @return
      */
-//COMPLEJIDAD: O(P)
     private String menorCarga(HashMap<String, Integer> cargaProcesadores, List<String> procesadoresRestantes) {
         String idMenor = "";
         int menorCarga = Integer.MAX_VALUE;
