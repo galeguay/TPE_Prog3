@@ -2,6 +2,8 @@ package tpe.model;
 
 import java.util.Objects;
 
+import static tpe.utils.TextColor.*;
+
 public class Tarea {
     private String nombre;
     private String ID;
@@ -62,18 +64,20 @@ public class Tarea {
         return Objects.equals(getID(), tarea.getID());
     }
 
-/*    @Override
+    @Override
     public String toString() {
-        return "Tarea{" +
+        return GREEN + "\nTarea{" +
                 "nombre='" + nombre + '\'' +
                 ", ID='" + ID + '\'' +
                 ", tiempoDeEjecucion=" + tiempoDeEjecucion +
                 ", critica=" + critica +
                 ", prioridad=" + prioridad +
-                '}';
-    }*/
-    @Override
+                "}" + RESET;
+    }
+
+
+    /*@Override
     public String toString() {
         return nombre;
-    }
+    }*/
 }

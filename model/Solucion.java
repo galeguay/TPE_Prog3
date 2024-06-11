@@ -1,11 +1,11 @@
 package tpe.model;
 
-import tpe.utils.TextColor;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
 import static tpe.utils.TextColor.GREEN;
+import static tpe.utils.TextColor.RED;
 import static tpe.utils.TextColor.RESET;
 
 public class Solucion {
@@ -84,19 +84,44 @@ public class Solucion {
     public String toString() {
         String resp = "\n";
 
-        if(!tareasNoAsignadas.isEmpty())
-            resp += (TextColor.RED + "NO ES SOLUCION PARA TODAS LAS TAREAS (" + nombreAlgoritmo.toUpperCase() + ")");
+        if (!tareasNoAsignadas.isEmpty())
+            resp += (RED + "NO ES SOLUCIÓN PARA TODAS LAS TAREAS (" + nombreAlgoritmo.toUpperCase() + ")");
         else
-            resp += (GREEN + "SOLUCION "+ nombreAlgoritmo);
+            resp += (GREEN + "SOLUCIÓN " + nombreAlgoritmo);
 
-        resp += "\nSolución: " + solucion +
+        resp += "\nSolución: " + enlistarTareas() +
                 "\nMétrica: " + metrica +
                 "\nTiempo de solución obtenida: " + tiempoSolucion;
 
-        if(!tareasNoAsignadas.isEmpty())
-            resp += "\nTareas no asignadas: " + tareasNoAsignadas + "\n(Por exeder el máximo de tareas criticas. Ej 3 tareas criticas para 1 procesador. Y/o por ejemplo tareas que exeden el timepo límite y no hay procesadores refrigerados)";
+        if (!tareasNoAsignadas.isEmpty())
+            resp += "\nTareas no asignadas: " + enlistarTareasNoAsignadas() + "\n(Por exceder el máximo de tareas críticas. Ej: 3 tareas críticas para 1 procesador. Y/o por ejemplo, tareas que exceden el tiempo límite y no hay procesadores refrigerados)";
         return resp;
     }
 
+    private String enlistarTareas() {
+        String res = "";
+        for (String p : solucion.keySet()) {
+            ArrayList<Tarea> tareasActual = solucion.get(p);
+            res += "\n  " + p + "[";
+            for (int i = 0; i < tareasActual.size(); i++) {
+                res += tareasActual.get(i).getNombre();
+                if (i < tareasActual.size() - 1) {
+                    res += ", ";
+                }
+            }
+            res += "]";
+        }
+        return res;
+    }
 
+    private String enlistarTareasNoAsignadas() {
+        String res = "";
+        for (int i = 0; i < tareasNoAsignadas.size(); i++) {
+            res += tareasNoAsignadas.get(i).getNombre();
+            if (i < tareasNoAsignadas.size() - 1) {
+                res += (", ");
+            }
+        }
+        return res;
+    }
 }

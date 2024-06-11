@@ -64,8 +64,22 @@ public class Servicios {
         return arbolTareas.enlistarRangoPrioridad(prioridadInferior, prioridadSuperior);
     }
 
-    /** (Resolución de etapa 2: Backtracking). Asigna las tareas usando Backtracking.
+
+    // ----------------- ETAPA 2 ----------------
+
+
+    /**
+     * (Resolución de etapa 2: Backtracking). Asigna las tareas usando Backtracking.
      * COMPLEJIDAD: O(p^t) -> siendo p:procesadores y t:tareas
+     * **Estrategia**: En el algoritmo se utilizó la estructura HashMap para almacenar la solución parcial y la carga de los
+     * procesadores, ya que HashMap permite búsquedas y actualizaciones en tiempo constante O(1), optimizando la eficiencia
+     * del algoritmo.
+     * Como se solicitaba, se aplicaron restricciones específicas:
+     * El límite de 2 tareas críticas por procesador y el tiempo máximo de ejecución permitido para procesadores no refrigerados.
+     * Como estrategia de poda, se verifica que el tiempo de ejecución de la solución parcial no supere el tiempo de la mejor
+     * solución encontrada hasta el momento, descartando aquellas combinaciones que no pueden mejorar el resultado actual.
+     * Esto permite reducir el espacio de búsqueda y acelerar el proceso de encontrar la mejor solucion posible.
+     *
      * @param tiempoLimitePNoRefrigerado
      * @return
      */
@@ -88,9 +102,8 @@ public class Servicios {
         return mejorSolucion;
     }
 
-
-    /**Metodo recursivo que ejecuta el algoritmo Backtracking para obtener la asignación de tareas tal que el tiempo de ejecución sea el mínimo.
-     * Estrategia:
+    /**
+     * Metodo recursivo que ejecuta el algoritmo Backtracking para obtener la asignación de tareas tal que el tiempo de ejecución sea el mínimo.
      *
      * @param tareaIndex
      * @param listaTareas
@@ -126,7 +139,7 @@ public class Servicios {
                     // Agregar tarea actual al procesador actual
                     solucionParcial.get(procesadorActual).add(tareaActual);
                     cargaProcesadores.put(procesadorActual, cargaProcesadores.get(procesadorActual) + tareaActual.getTiempoDeEjecucion());
-                    asignada[indexAsignada]=true;
+                    asignada[indexAsignada] = true;
 
                     //PODA: si el tiempo maximo parcial supera al tiempo de la mejor solucion: se poda, ya que no tiene sentido recorrer el resto.
                     if (max(solucionParcial) < mejorSolucion.getTiempoSolucion()) {
@@ -150,14 +163,16 @@ public class Servicios {
             }
         }
         // Si no fue asignada la agrego a la solucion como Tarea No Asignada
-        if (!anyTrue){
+        if (!anyTrue) {
             backtracking(tareaIndex + 1, listaTareas, solucionParcial, cargaProcesadores);
             mejorSolucion.setTareaNoAsignada(tareaActual);
         }
     }
 
-    /**Obtiene el tiempo de la suma de tareas, del procesador con mayor carga.
+    /**
+     * Obtiene el tiempo de la suma de tareas, del procesador con mayor carga.
      * COMPLEJIDAD: O(p*t)
+     *
      * @param solucionParcial
      * @return
      */
@@ -191,8 +206,10 @@ public class Servicios {
         return contador >= 2;
     }
 
-    /** Guarda la solucion parcial pasado por parámetro en la mejor solución. Lo hace recorriendo el HashMap de solucion parciol, y las listas de tareas asignada a cada procesador
+    /**
+     * Guarda la solucion parcial pasado por parámetro en la mejor solución. Lo hace recorriendo el HashMap de solucion parciol, y las listas de tareas asignada a cada procesador
      * COMPLEJIDAD: O(p*t)
+     *
      * @param solucionParcial
      */
     private void reemplazarMejorSolucion(HashMap<String, ArrayList<Tarea>> solucionParcial) {
@@ -207,13 +224,21 @@ public class Servicios {
         }
     }
 
-    /** (Resolución de etapa 2: Greedy). Asigna las tareas usando Greedy.
-     * Estrategia:
-     * 
+    /**
+     * (Resolución de etapa 2: Greedy). Asigna las tareas usando Greedy.
+     * COMPLEJIDAD: O(t^2)
+     * **Estrategia**: Primero, se inicializa un HashMap vacío solucionParcial para almacenar las asignaciones de tareas a cada
+     * procesador y otro HashMap cargaProcesadores para almacenar la carga de trabajo de cada procesador,
+     * aprovechando el acceso rápido de O(1) de estas estructuras.
+     * Las tareas se ordenaron estrategicamente en orden descendente según su tiempo de ejecución para asignar primero las tareas
+     * más largas al procesador con menor carga actual.
+     * Siguiendo la estructura general de Greedy, se evalua la factibilidad determinando si es válido para nuestro
+     * problema agregar el candidato seleccionado a la solución, segun las siguientes restricciones:
+     * El límite de 2 tareas críticas por procesador y el tiempo máximo de ejecución permitido para procesadores no refrigerados.
+     *
      * @param tiempoLimitePNoRefrigerado
      * @return
      */
-    //COMPLEJIDAD: O(P+(T*logT)+(P+T))
     public Solucion asignarTareasGreedy(int tiempoLimitePNoRefrigerado) {
         Solucion solucion = new Solucion();
         solucion.setNombreAlgoritmo("Greedy");
@@ -281,11 +306,13 @@ public class Servicios {
         return solucion;
     }
 
-    /**Analiza si es viable agregar la tarea actual en el procesador actual, basandose en las siguientes restricciones:
+    /**
+     * Analiza si es viable agregar la tarea actual en el procesador actual, basandose en las siguientes restricciones:
      * Ningún procesador podrá ejecutar más de 2 tareas crítica.
      * Los procesadores no refrigerados no podrán dedicar más de X tiempo de ejecución a
      * las tareas asignadas
      * COMPLEJIDAD: O(T)
+     *
      * @param solucionParcial
      * @param tareaActual
      * @param procesador
@@ -309,6 +336,7 @@ public class Servicios {
     /**
      * Devuelve el ID del procesador con menor carga, de entre los considerados que contiene la lista pasada por parametro
      * COMPLEJIDAD: O(P)
+     *
      * @param cargaProcesadores
      * @param procesadoresRestantes
      * @return String
