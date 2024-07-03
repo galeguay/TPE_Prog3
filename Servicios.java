@@ -100,7 +100,7 @@ public class Servicios {
 
     /**
      * Metodo recursivo que ejecuta el algoritmo Backtracking para obtener la asignación de tareas tal que el tiempo de ejecución sea el mínimo.
-     *
+     * Construcción de solución parcial: Recorriendo la lista de tareas se intenta asignar la primer tarea a cada procesador, creando una rama por cada procesador. Luego se asigna la segunda tarea a cada procesador, creando más ramas y así con las restantes para lograr las diferentes combinaciones. Se evalúa cada una y busca la mejor solución. Básicamente, va probando todas las opciones, retrocede si una no funciona bien, y sigue adelante hasta encontrar la distribución óptima.
      * @param tareaIndex
      * @param listaTareas
      * @param solucionParcial
@@ -122,9 +122,6 @@ public class Servicios {
 
         // Obtenemos la tarea actual a asignar
         Tarea tareaActual = listaTareas.get(tareaIndex);
-
-        //El siguiente array se usa para el chequear aquellas tareas que no puedan ser asignadas en ninguno de los procesadores por las condiciones de consigna
-
 
         for (String procesadorActual : procesadores.keySet()) {
 
@@ -197,6 +194,22 @@ public class Servicios {
     }
 
     /**
+     * Chequea en el lista de tareas ya asignadas al procesador pasada por parametro, si hay dos tareas crítica
+     *
+     * @param tareasDelProcesador
+     * @return
+     */
+    //COMPLEJIDAD: O(t)
+    private boolean limiteCriticas(ArrayList<Tarea> tareasDelProcesador) {
+        int contador = 0;
+        for (Tarea t : tareasDelProcesador) {
+            if (t.isCritica())
+                contador++;
+        }
+        return contador >= 2;
+    }
+
+    /**
      * (Resolución de etapa 2: Greedy). Asigna las tareas usando Greedy.
      * COMPLEJIDAD: O(t^2)
      * **Estrategia**: Primero, se inicializa un HashMap vacío solucionParcial para almacenar las asignaciones de tareas a cada
@@ -215,8 +228,8 @@ public class Servicios {
         Solucion solucion = new Solucion();
         solucion.setNombreAlgoritmo("Greedy");
 
-
-
+        HashMap<String, Integer> cargaProcesadores = new HashMap<>();
+        ArrayList tareasNoAsignadas = new ArrayList();
         int considerados = 0;
 
         //COMPLEJIDAD: O(P)
@@ -224,6 +237,7 @@ public class Servicios {
         HashMap<String, ArrayList<Tarea>> solucionParcial = new HashMap<>();
         for (String p : procesadores.keySet()) {
             solucionParcial.put(p, new ArrayList<>());
+            cargaProcesadores.put(p, 0);
         }
 
         //ordena lista de tareas
@@ -231,42 +245,49 @@ public class Servicios {
 
         //COMPLEJIDAD: O(T*logT)
         tareasOrdenadas.sort((t1, t2) -> Integer.compare(t2.getTiempoDeEjecucion(), t1.getTiempoDeEjecucion()));
+
         Iterator<Tarea> itTareas = tareasOrdenadas.iterator();
 
-        //Procesadores en una lista, para luego poder ordenarlos por el tiempo de ejecuccion.
-        List<Procesador> procesadoresOrdenados = new ArrayList<>(procesadores.values());
-
-
-        //COMPLEJIDAD: O(P)
+        //COMPLEJIDAD: O(P+(P+T)) -> O(P+T)
         while (itTareas.hasNext()) {
             Tarea tareaActual = itTareas.next();
             considerados += solucionParcial.size();
 
-            boolean asignada = false;
-
-            //COMPLEJIDAD: O(T*logT)
-            //Ordena de menor a mayor los procesadores segun su tiempo de ejecuccion
-            procesadoresOrdenados.sort((p1, p2) -> Integer.compare(p1.getTiempoEjecucion(), p2.getTiempoEjecucion()));
+            //cargamos, en principio, todos los procesadores como posibles soluciones
+            ArrayList<String> procesadoresRestantes = new ArrayList<>();
 
             //COMPLEJIDAD: O(P)
-            for (Procesador p : procesadoresOrdenados) {
-                //COMPLEJIDAD: O(1)
+            for (String p : procesadores.keySet()) {
+                procesadoresRestantes.add(p);
+            }
+            boolean asignada = false;
+
+            //COMPLEJIDAD: O(P+T)
+            while (!asignada && !procesadoresRestantes.isEmpty()) {
+                //COMPLEJIDAD: O(P)
+                String procesadorMenorCarga = menorCarga(cargaProcesadores, procesadoresRestantes);
+                //COMPLEJIDAD: O(T)
                 // cehequea si es factible (si se cumplen las dos condiciones)
-                if (esFactible(solucionParcial, tareaActual, p, tiempoLimitePNoRefrigerado)) {
-                    solucionParcial.get(p.getID()).add(tareaActual);
-                    p.setTiempoEjecucion(+tareaActual.getTiempoDeEjecucion());
+                if (esFactible(solucionParcial, tareaActual, procesadorMenorCarga, tiempoLimitePNoRefrigerado, cargaProcesadores)) {
+                    solucionParcial.get(procesadorMenorCarga).add(tareaActual);
+                    cargaProcesadores.put(procesadorMenorCarga, cargaProcesadores.get(procesadorMenorCarga) + tareaActual.getTiempoDeEjecucion());
                     asignada = true;
                 } else {
+                    //descartamos el procesador como solucion ya que no es factible, para la tarea actual
+                    //COMPLEJIDAD: O(P)
+                    procesadoresRestantes.remove(procesadorMenorCarga);
                     considerados--;
                 }
-                if(asignada){
-                    break;
-                }
+            }
+            // si la tarea no fue asignada y no quedan procesadores por recorrer agrego la TareaActual a tareasNoAsignadas para mostrarla en la solucion
+            if (!asignada && procesadoresRestantes.isEmpty()) {
+                tareasNoAsignadas.add(tareaActual);
             }
         }
 
         solucion.setSolucion(solucionParcial);
         solucion.setMetrica(considerados);
+        solucion.setTareasNoAsignadas(tareasNoAsignadas);
         return solucion;
     }
 
@@ -275,22 +296,48 @@ public class Servicios {
      * Ningún procesador podrá ejecutar más de 2 tareas crítica.
      * Los procesadores no refrigerados no podrán dedicar más de X tiempo de ejecución a
      * las tareas asignadas
-     * COMPLEJIDAD: O(1)
+     * COMPLEJIDAD: O(T)
      *
-     *
+     * @param solucionParcial
+     * @param tareaActual
+     * @param procesador
+     * @param tiempoLimitePNoRefrigerado
      * @return
      */
-    private boolean esFactible(HashMap<String, ArrayList<Tarea>> solucionParcial, Tarea tareaActual, Procesador procesador, int tiempoLimitePNoRefrigerado) {
+    private boolean esFactible(HashMap<String, ArrayList<Tarea>> solucionParcial, Tarea tareaActual, String procesador, int tiempoLimitePNoRefrigerado, HashMap<String, Integer> cargaProcesadores) {
 
         //CONDICIÓN 1: chequear si ya hay 2 criticas en la lista del procesador actual
-        if (!tareaActual.isCritica() || procesador.getCantidadTareasCritias()<2) {
+        if (!tareaActual.isCritica() || !limiteCriticas(solucionParcial.get(procesador))) {
 
             //CONDICIÓN 2: si el procesador es no refrigerado, se chequea que al agregar la tarea actual no supere el limite de tiempo
-            if (procesador.isRefrigerado() || ((procesador.getTiempoEjecucion()+tareaActual.getTiempoDeEjecucion()) <= tiempoLimitePNoRefrigerado)) {
+            if (procesadores.get(procesador).isRefrigerado() || ((tareaActual.getTiempoDeEjecucion() + cargaProcesadores.get(procesador)) <= tiempoLimitePNoRefrigerado)) {
                 return true;
             }
             return false;
         }
         return false;
+    }
+
+    /**
+     * Devuelve el ID del procesador con menor carga, de entre los considerados que contiene la lista pasada por parametro
+     * COMPLEJIDAD: O(P)
+     *
+     * @param cargaProcesadores
+     * @param procesadoresRestantes
+     * @return String
+     */
+    private String menorCarga(HashMap<String, Integer> cargaProcesadores, List<String> procesadoresRestantes) {
+        String idMenor = "";
+        int menorCarga = Integer.MAX_VALUE;
+        for (String procesador : cargaProcesadores.keySet()) {
+            if (procesadoresRestantes.contains(procesador)) {
+                int cargaActual = cargaProcesadores.get(procesador);
+                if (cargaActual < menorCarga) {
+                    menorCarga = cargaActual;
+                    idMenor = procesador;
+                }
+            }
+        }
+        return idMenor;
     }
 }
