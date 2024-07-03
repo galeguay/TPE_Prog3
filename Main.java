@@ -32,11 +32,11 @@ public class Main {
 		System.out.println(salidaServicio3.toString());
 
 		//BACKTRACKING
-		Solucion solucionBack = servicios.asignarTareasBacktracking(10);
+		Solucion solucionBack = servicios.asignarTareasBacktracking(100);
 		System.out.println(solucionBack.toString());
 
 		//GREEDY
-		Solucion solucionGreedy = servicios.asignarTareasGreedy(10);
+		Solucion solucionGreedy = servicios.asignarTareasGreedy(100);
 		System.out.println(solucionGreedy.toString());
 
 	}

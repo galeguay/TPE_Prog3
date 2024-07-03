@@ -11,6 +11,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 
 public class CSVReader {
@@ -18,7 +19,7 @@ public class CSVReader {
     public CSVReader() {
     }
 
-    public void readTasks(String taskPath, Arbol arbol, HashMap<String, Tarea> tareas) {
+    public void readTasks(String taskPath, Arbol arbol, HashMap<String, Tarea> tareas, List<Tarea> tareasCriticas,List<Tarea> tareasNoCriticas) {
 
         // Obtengo una lista con las lineas del archivo
         // lines.get(0) tiene la primer linea del archivo
@@ -37,6 +38,12 @@ public class CSVReader {
             Tarea tarea = new Tarea(nombre, id, tiempo, critica, prioridad);
             arbol.add(tarea);
             tareas.put(tarea.getID(), tarea);
+
+            if(tarea.isCritica()){
+                tareasCriticas.add(tarea);
+            }else{
+                tareasNoCriticas.add(tarea);
+            }
         }
 
     }
