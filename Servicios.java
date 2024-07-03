@@ -100,13 +100,12 @@ public class Servicios {
 
     /**
      * Metodo recursivo que ejecuta el algoritmo Backtracking para obtener la asignación de tareas tal que el tiempo de ejecución sea el mínimo.
-     *
+     * Construcción de solución parcial: Recorriendo la lista de tareas se intenta asignar la primer tarea a cada procesador, creando una rama por cada procesador. Luego se asigna la segunda tarea a cada procesador, creando más ramas y así con las restantes para lograr las diferentes combinaciones. Se evalúa cada una y busca la mejor solución. Básicamente, va probando todas las opciones, retrocede si una no funciona bien, y sigue adelante hasta encontrar la distribución óptima.
      * @param tareaIndex
      * @param listaTareas
      * @param solucionParcial
      * @param cargaProcesadores
      */
-    //Recorriendo la lista de tareas se intenta asignar la primer tarea a cada procesador, creando una rama por cada procesador. Luego se asigna la segunda tarea a cada procesador, creando más ramas y así con las restantes para lograr las diferentes combinaciones. Se evalúa cada una y busca la mejor solución. Básicamente, va probando todas las opciones, retrocede si una no funciona bien, y sigue adelante hasta encontrar la distribución óptima.
     public void backtracking(int tareaIndex, List<Tarea> listaTareas, HashMap<String, ArrayList<Tarea>> solucionParcial, HashMap<String, Integer> cargaProcesadores) {
         mejorSolucion.sumarMetrica();
 
