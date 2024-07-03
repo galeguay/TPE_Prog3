@@ -11,8 +11,8 @@ public class Main {
 
 	public static void main(String args[]) {
 		//carga de tareas y procesadores
-		Servicios servicios = new Servicios("datasets/Procesadores.csv", "datasets/Tareas.csv");
-
+		Servicios servicios = new Servicios("datasets/Procesadores1.csv", "datasets/Tareas2.csv");
+/*
 		// SERVICIO 1
 		System.out.println("\nSERVICIO 1");
 		System.out.println(servicios.servicio1("T3"));
@@ -30,7 +30,7 @@ public class Main {
 		int priridadMayor = inputServicio3("Ingrese la prioridad MAYOR del rango:", priridadMenor);
 		List<Tarea> salidaServicio3 = servicios.servicio3(priridadMenor, priridadMayor);
 		System.out.println(salidaServicio3.toString());
-
+*/
 		//BACKTRACKING
 		Solucion solucionBack = servicios.asignarTareasBacktracking(100);
 		System.out.println(solucionBack.toString());
